@@ -1,0 +1,2752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light dark">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="HandheldFriendly" content="true">
+    <title>阀座槽计算器</title>
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --canvas-bg: #f8f9fa;
+            --text-color: #2c3e50;
+            --border-color: #e0e0e0;
+            --grid-color: #e0e0e0;
+            --axis-color: #2c3e50;
+            --status-bg: rgba(0, 0, 0, 0.85);
+            --status-color: white;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a2e;
+                --panel-bg: rgba(30, 30, 46, 0.95);
+                --canvas-bg: #16213e;
+                --text-color: #e0e0e0;
+                --border-color: #2a2a3e;
+                --grid-color: #2a2a3e;
+                --axis-color: #e0e0e0;
+                --status-bg: rgba(255, 255, 255, 0.15);
+                --status-color: #e0e0e0;
+            }
+            
+            .program-output {
+                background: #0f3460 !important;
+            }
+            
+            .machine-params,
+            .c-circle-item,
+            .q-circle-controls,
+            .q-circle-item {
+                background: rgba(40, 40, 60, 0.7) !important;
+                border-color: #2a2a4e !important;
+            }
+            
+            input[type="number"],
+            .modal-input,
+            select {
+                background: #2a2a3e !important;
+                border-color: #3a3a5e !important;
+                color: #e0e0e0 !important;
+            }
+            
+            input[type="number"]:focus,
+            .modal-input:focus,
+            select:focus {
+                border-color: #3498db !important;
+            }
+            
+            table th {
+                background: rgba(40, 40, 60, 0.7) !important;
+            }
+            
+            .coordinate {
+                background: rgba(40, 40, 60, 0.7) !important;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', 'HarmonyOS Sans SC', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, var(--bg-color) 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 500px 1fr;
+            gap: 15px;
+            width: 100%;
+            min-height: 100vh;
+            height: 100vh;
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+            
+            .canvas-container {
+                min-height: 500px;
+                height: 70vh;
+                width: 100%;
+            }
+            
+            .control-panel {
+                height: auto;
+                max-height: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                gap: 10px;
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .canvas-container {
+                min-height: 400px;
+                height: 60vh;
+                width: 100%;
+                position: relative;
+            }
+            
+            .canvas-wrapper {
+                width: 100% !important;
+                height: 100% !important;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            #mainCanvas {
+                width: 100% !important;
+                height: 100% !important;
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+            
+            .panel {
+                padding: 15px !important;
+            }
+            
+            h2, h3 {
+                font-size: 1.1rem !important;
+            }
+            
+            button {
+                padding: 10px 15px !important;
+                font-size: 14px !important;
+            }
+            
+            input[type="number"],
+            select {
+                padding: 8px 12px !important;
+                font-size: 14px !important;
+            }
+            
+            /* 手机端优化输入框 */
+            input[type="number"] {
+                font-size: 16px !important;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .button-group button {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 8px;
+                gap: 8px;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .canvas-container {
+                min-height: 300px;
+                height: 50vh;
+                width: 100%;
+            }
+            
+            .canvas-wrapper {
+                width: 100% !important;
+                height: 100% !important;
+            }
+            
+            #mainCanvas {
+                width: 100% !important;
+                height: 100% !important;
+            }
+            
+            .program-tabs {
+                flex-direction: column;
+            }
+            
+            .program-tab {
+                padding: 8px;
+            }
+        }
+        
+        /* 横屏优化 */
+        @media (orientation: landscape) and (max-width: 768px) {
+            .container {
+                grid-template-columns: 300px 1fr;
+                grid-template-rows: 1fr;
+                height: 100vh;
+            }
+            
+            .canvas-container {
+                height: 100%;
+                min-height: auto;
+            }
+            
+            .canvas-wrapper {
+                height: 100% !important;
+            }
+            
+            #mainCanvas {
+                height: 100% !important;
+            }
+        }
+        
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .control-panel {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            max-height: 100%;
+        }
+        
+        h2, h3 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .input-row .input-group {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        label {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            display: block;
+        }
+        
+        input[type="number"],
+        select {
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            width: 100%;
+            background: white;
+            color: var(--text-color);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:hover, button:active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .canvas-container {
+            position: relative;
+            background: var(--canvas-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+        }
+        
+        .canvas-wrapper {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: calc(100% - 50px);
+            overflow: hidden;
+            background: var(--canvas-bg);
+        }
+        
+        #mainCanvas {
+            display: block;
+            background: var(--canvas-bg);
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: fixed;
+        }
+        
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        th {
+            background: rgba(248, 249, 250, 0.5);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        td {
+            font-size: 0.9rem;
+        }
+        
+        .coordinate {
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            background: rgba(248, 249, 250, 0.5);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+        
+        .dimension {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .angle {
+            color: #9b59b6;
+            font-weight: 600;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: var(--status-bg);
+            color: var(--status-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 100;
+            pointer-events: none;
+            max-width: calc(100% - 20px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+            line-height: 1.4;
+        }
+        
+        .connection-line {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .connection-line.length {
+            color: #e74c3c;
+        }
+        
+        .connection-line.angle {
+            color: #9b59b6;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .loading-overlay {
+                background: rgba(30, 30, 46, 0.9);
+            }
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .canvas-title {
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 50px;
+            padding: 0 15px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .program-output {
+            background: #2c3e50;
+            color: white;
+            font-family: 'Courier New', Consolas, Monaco, monospace;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 11px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow: auto;
+            max-height: 250px;
+        }
+        
+        .program-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .export-btn {
+            padding: 4px 8px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        
+        .machine-params {
+            background: rgba(248, 249, 250, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .machine-params h4 {
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+        
+        .program-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+        
+        .c-circle-list {
+            margin-top: 15px;
+        }
+        
+        .c-circle-item {
+            background: rgba(248, 249, 250, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .c-circle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .c-circle-title {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .remove-circle-btn {
+            padding: 4px 8px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .add-circle-btn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .program-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+        
+        .program-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .program-tab:hover {
+            background: rgba(248, 249, 250, 0.5);
+        }
+        
+        .program-tab.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+        }
+        
+        .program-content {
+            display: none;
+        }
+        
+        .program-content.active {
+            display: block;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: var(--text-color);
+        }
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .modal-btn.primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .modal-btn.secondary {
+            background: var(--border-color);
+            color: #666;
+        }
+        
+        .reverse-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        
+        .incremental-btn {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+        
+        .rotate-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        .q-circle-controls {
+            background: rgba(248, 249, 250, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .q-circle-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .q-circle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .q-circle-title {
+            font-weight: 600;
+            color: #ff9800;
+        }
+        
+        .add-q-circle-btn {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+        
+        .remove-q-circle-btn {
+            padding: 4px 8px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        /* 新添加：内容区域滚动 */
+        .data-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+        
+        /* 新添加：连接线数据表格容器 */
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            input[type="number"] {
+                font-size: 16px !important;
+            }
+            
+            .container {
+                min-height: -webkit-fill-available;
+                height: -webkit-fill-available;
+            }
+            
+            .canvas-container {
+                min-height: 50vh;
+            }
+        }
+        
+        /* 新增：开发者信息样式 */
+        .developer-info {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .developer-info .highlight {
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .developer-info a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .developer-info a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧控制面板（合并了参数设置和连接线数据） -->
+        <div class="panel control-panel">
+            <h2>⚙️ 阀座槽参数设置</h2>
+            <div class="panel-content">
+                <!-- 参数设置部分 -->
+                <h3>主圆参数</h3>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="r1X">R1 X坐标：</label>
+                        <input type="number" id="r1X" value="3.6" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label for="r1Y">R1 Y坐标：</label>
+                        <input type="number" id="r1Y" value="18.7" step="0.1">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="bigCircleDiameter">大圆直径 (R1)：</label>
+                    <input type="number" id="bigCircleDiameter" value="14" step="0.1">
+                </div>
+                
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="r2X">R2 X坐标：</label>
+                        <input type="number" id="r2X" value="27" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label for="r2Y">R2 Y坐标：</label>
+                        <input type="number" id="r2Y" value="4.5" step="0.1">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="smallCircleDiameter">小圆直径 (R2)：</label>
+                        <input type="number" id="smallCircleDiameter" value="8.4" step="0.1">
+                    </div>
+                    
+                    <h3>平行槽参数</h3>
+                    <div class="input-group">
+                        <label for="parallelDiameter">槽间距：</label>
+                        <input type="number" id="parallelDiameter" value="7.1" step="0.1">
+                        <div class="info-text">自动计算一半：<span id="halfParallel">3.55</span></div>
+                    </div>
+                    
+                    <h3>C槽参数</h3>
+                    <div class="input-group">
+                        <label for="smallCircleDiameter2">槽直径：</label>
+                        <input type="number" id="smallCircleDiameter2" value="4" step="0.1">
+                    </div>
+                    
+                    <h3>C槽列表</h3>
+                    <div class="c-circle-list" id="cCircleList">
+                        <!-- C槽将在这里动态添加 -->
+                    </div>
+                    
+                    <button class="add-circle-btn" id="addCircleBtn">+ 添加C槽</button>
+                    <button class="incremental-btn" id="switchModeBtn" style="margin-top: 10px; width: 100%; padding: 10px;">
+                        🔄 切换所有为增量编程
+                    </button>
+                    
+                    <h3>Q槽参数（可选）</h3>
+                    <div class="q-circle-controls">
+                        <div class="input-group">
+                            <label for="qCircleDiameter">Q槽直径：</label>
+                            <input type="number" id="qCircleDiameter" value="5" step="0.1">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="defaultQCircleX">X轴平移：</label>
+                            <input type="number" id="defaultQCircleX" value="3" step="0.1">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="defaultQCircleY">Y轴偏移：</label>
+                            <input type="number" id="defaultQCircleY" value="0" step="0.1">
+                        </div>
+                        
+                        <button class="add-q-circle-btn" id="addQCircleBtn" style="margin-top: 10px; width: 100%;">
+                            + 添加Q槽
+                        </button>
+                        
+                        <div id="qCircleList" style="margin-top: 15px;">
+                            <!-- Q槽列表将在这里动态添加 -->
+                        </div>
+                    </div>
+                    
+                    <h3>起点坐标</h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="startX">起点 X坐标：</label>
+                            <input type="number" id="startX" value="0" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label for="startY">起点 Y坐标：</label>
+                            <input type="number" id="startY" value="-28" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <h3>旋转中心坐标</h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="originX">旋转中心 X：</label>
+                            <input type="number" id="originX" value="0" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label for="originY">旋转中心 Y：</label>
+                            <input type="number" id="originY" value="0" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <h3>加工参数</h3>
+                    <div class="machine-params">
+                        <div class="input-group">
+                            <label for="cuttingDepth">切削深度：</label>
+                            <input type="number" id="cuttingDepth" value="5.0" step="0.1">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="feedRate">进给速度：</label>
+                            <input type="number" id="feedRate" value="100" step="1">
+                        </div>
+                    </div>
+                    
+                    <h3>图形旋转</h3>
+                    <div class="input-group">
+                        <label for="rotationAngle">旋转角度：</label>
+                        <select id="rotationAngle">
+                            <option value="0">0° (不旋转)</option>
+                            <option value="180">180° (上下翻转)</option>
+                            <option value="90">90°</option>
+                            <option value="270">270°</option>
+                            <option value="custom">自定义角度</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group" id="customAngleGroup" style="display: none;">
+                        <label for="customAngleValue">自定义角度：</label>
+                        <input type="number" id="customAngleValue" value="0" step="1" min="-360" max="360">
+                    </div>
+                    
+                    <div class="button-group" style="margin-top: 10px;">
+                        <button id="rotateBtn" style="flex: 1;" class="rotate-btn">🔄 应用旋转</button>
+                    </div>
+                    
+                    <div class="button-group" style="margin-top: 10px;">
+                        <button id="reverseBtn" style="flex: 1;" class="reverse-btn">🔄 反转加工顺序</button>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="resetBtn" style="flex: 1;">🗑️ 清除所有参数</button>
+                    </div>
+                    
+                    <!-- 连接线数据部分 -->
+                    <div class="data-section">
+                        <h3 id="connectionTitle">旋转加工数据</h3>
+                        <div class="table-container">
+                            <table id="connectionTable">
+                                <thead>
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>槽类型</th>
+                                        <th>旋转角度</th>
+                                        <th>旋转半径</th>
+                                        <th>方向</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="connectionTableBody">
+                                    <!-- 连接线数据将在这里动态添加 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px;">参考信息</h3>
+                        <table>
+                            <tr>
+                                <th>参数</th>
+                                <th>值</th>
+                            </tr>
+                            <tr>
+                                <td>旋转中心</td>
+                                <td id="originCoord" class="coordinate">(0.00, 0.00)</td>
+                            </tr>
+                            <tr>
+                                <td>起点坐标</td>
+                                <td id="startCoord" class="coordinate">(0.00, -28.00)</td>
+                            </tr>
+                            <tr>
+                                <td>旋转半径</td>
+                                <td id="rotationRadius" class="dimension">28.00</td>
+                            </tr>
+                            <tr>
+                                <td>R1坐标</td>
+                                <td id="r1Coord" class="coordinate">(3.60, 18.70)</td>
+                            </tr>
+                            <tr>
+                                <td>R2坐标</td>
+                                <td id="r2Coord" class="coordinate">(27.00, 4.50)</td>
+                            </tr>
+                            <tr>
+                                <td>中心线长度</td>
+                                <td id="centerLength" class="dimension">27.30</td>
+                            </tr>
+                            <tr>
+                                <td>中心线角度</td>
+                                <td id="centerAngle" class="angle">-29.10°</td>
+                            </tr>
+                            <tr>
+                                <td>槽间距</td>
+                                <td id="parallelSpacing" class="dimension">7.10</td>
+                            </tr>
+                            <tr>
+                                <td>C槽数量</td>
+                                <td id="circleCount">2</td>
+                            </tr>
+                            <tr>
+                                <td>Q槽数量</td>
+                                <td id="qCircleCountDisplay">0</td>
+                            </tr>
+                            <tr>
+                                <td>图形旋转</td>
+                                <td id="graphRotationDisplay">0°</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="program-section">
+                        <div class="program-header">
+                            <h3>CNC加工程序</h3>
+                            <button class="export-btn" id="exportProgramBtn">📥 导出</button>
+                        </div>
+                        
+                        <div class="program-tabs">
+                            <div class="program-tab active" data-tab="program1">第一套程序</div>
+                            <div class="program-tab" data-tab="program2">第二套程序</div>
+                        </div>
+                        
+                        <div class="program-content active" id="program1Content">
+                            <div class="program-output" id="programOutput1">
+                                <!-- 第一套程序代码将在这里显示 -->
+                            </div>
+                        </div>
+                        
+                        <div class="program-content" id="program2Content">
+                            <div class="program-output" id="programOutput2">
+                                <!-- 第二套程序代码将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 开发者信息 -->
+                    <div class="developer-info">
+                        <p>
+                            本工具由 <span class="highlight">鱼</span> 与 
+                            <a href="https://www.deepseek.com" target="_blank" rel="noopener noreferrer">DeepSeek AI</a> 
+                            共同开发<br>
+                            用于阀座槽加工计算与CNC程序生成
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧画布区域 -->
+            <div class="panel canvas-container">
+                <div class="canvas-title">
+                    <h2>📐 阀座槽布局图</h2>
+                </div>
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="mainCanvas"></canvas>
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 10px;">🔄</div>
+                            <div>正在更新图形...</div>
+                        </div>
+                    </div>
+                    <div class="status-bar" id="statusBar">
+                        缩放: 100% | 坐标系: Y轴向上为正 | 旋转: 0°
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 导出模态框 -->
+        <div class="modal-overlay" id="exportModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>导出CNC程序</h3>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="modal-input" id="fileNameInput" placeholder="请输入文件名（可含扩展名）">
+                    <div class="info-text" style="margin-top: 10px;">
+                        输入完整的文件名，如：cnc_program.txt 或 cnc_program
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn secondary" id="cancelExportBtn">取消</button>
+                    <button class="modal-btn primary" id="confirmExportBtn">导出</button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // 获取DOM元素
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            const statusBar = document.getElementById('statusBar');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const canvasWrapper = document.getElementById('canvasWrapper');
+            
+            // 获取输入元素
+            const r1XInput = document.getElementById('r1X');
+            const r1YInput = document.getElementById('r1Y');
+            const r2XInput = document.getElementById('r2X');
+            const r2YInput = document.getElementById('r2Y');
+            const bigCircleDiameterInput = document.getElementById('bigCircleDiameter');
+            const smallCircleDiameterInput = document.getElementById('smallCircleDiameter');
+            const parallelDiameterInput = document.getElementById('parallelDiameter');
+            const halfParallelSpan = document.getElementById('halfParallel');
+            const smallCircleDiameter2Input = document.getElementById('smallCircleDiameter2');
+            const startXInput = document.getElementById('startX');
+            const startYInput = document.getElementById('startY');
+            const originXInput = document.getElementById('originX');
+            const originYInput = document.getElementById('originY');
+            const cuttingDepthInput = document.getElementById('cuttingDepth');
+            const feedRateInput = document.getElementById('feedRate');
+            const rotationAngleSelect = document.getElementById('rotationAngle');
+            const customAngleGroup = document.getElementById('customAngleGroup');
+            const customAngleValue = document.getElementById('customAngleValue');
+            const rotateBtn = document.getElementById('rotateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const reverseBtn = document.getElementById('reverseBtn');
+            const addCircleBtn = document.getElementById('addCircleBtn');
+            const switchModeBtn = document.getElementById('switchModeBtn');
+            const cCircleList = document.getElementById('cCircleList');
+            const exportProgramBtn = document.getElementById('exportProgramBtn');
+            const programOutput1 = document.getElementById('programOutput1');
+            const programOutput2 = document.getElementById('programOutput2');
+            const graphRotationDisplay = document.getElementById('graphRotationDisplay');
+            
+            // Q槽相关元素
+            const qCircleDiameterInput = document.getElementById('qCircleDiameter');
+            const defaultQCircleXInput = document.getElementById('defaultQCircleX');
+            const defaultQCircleYInput = document.getElementById('defaultQCircleY');
+            const addQCircleBtn = document.getElementById('addQCircleBtn');
+            const qCircleListContainer = document.getElementById('qCircleList');
+            const qCircleCountDisplay = document.getElementById('qCircleCountDisplay');
+            
+            // 获取模态框相关元素
+            const exportModal = document.getElementById('exportModal');
+            const fileNameInput = document.getElementById('fileNameInput');
+            const cancelExportBtn = document.getElementById('cancelExportBtn');
+            const confirmExportBtn = document.getElementById('confirmExportBtn');
+            
+            // 获取程序切换相关元素
+            const programTabs = document.querySelectorAll('.program-tab');
+            
+            // 获取数据显示元素
+            const originCoord = document.getElementById('originCoord');
+            const startCoord = document.getElementById('startCoord');
+            const r1Coord = document.getElementById('r1Coord');
+            const r2Coord = document.getElementById('r2Coord');
+            const rotationRadius = document.getElementById('rotationRadius');
+            const centerLength = document.getElementById('centerLength');
+            const centerAngle = document.getElementById('centerAngle');
+            const parallelSpacing = document.getElementById('parallelSpacing');
+            const circleCount = document.getElementById('circleCount');
+            const connectionTitle = document.getElementById('connectionTitle');
+            const connectionTableBody = document.getElementById('connectionTableBody');
+            
+            // 默认参数
+            const defaultParams = {
+                r1X: 3.6,
+                r1Y: 18.7,
+                r2X: 27,
+                r2Y: 4.5,
+                bigCircleDiameter: 14,
+                smallCircleDiameter: 8.4,
+                parallelDiameter: 7.1,
+                smallCircleDiameter2: 4,
+                qCircleDiameter: 5,
+                qCircleX: 3,
+                qCircleY: 0,
+                startX: 0,
+                startY: -28,
+                originX: 0,
+                originY: 0,
+                cuttingDepth: 5.0,
+                feedRate: 100
+            };
+            
+            // C槽数据 - 支持增量编程
+            let cCircles = [
+                { 
+                    id: 1, 
+                    moveDistance: 6.3, 
+                    offsetDistance: 3.2, 
+                    name: 'C1',
+                    type: 'absolute',
+                    baseCircleId: null
+                },
+                { 
+                    id: 2, 
+                    moveDistance: 2.2,
+                    offsetDistance: -0.9,
+                    name: 'C2',
+                    type: 'incremental',
+                    baseCircleId: 1
+                }
+            ];
+            
+            // Q槽数据 - 默认为空
+            let qCircles = [];
+            
+            // 当前参数
+            let params = {...defaultParams};
+            let isDrawing = false;
+            let currentScale = 6;
+            let viewOffsetX = 0;
+            let viewOffsetY = 0;
+            let isInitialized = false;
+            let nextCircleId = 3;
+            let nextQCircleId = 1;
+            let currentProgram = 'program1';
+            let reverseOrder = false;
+            let connectionOrder = [];
+            
+            // 新增：图形旋转角度
+            let graphRotation = 0; // 角度，0表示不旋转
+            
+            // 观察器实例
+            let inputObserver = null;
+            let resizeObserver = null;
+            
+            // 四舍五入保留两位小数
+            function roundToTwoDecimals(num) {
+                return Math.round(num * 100) / 100;
+            }
+            
+            // 计算平行线半距
+            function calculateHalfParallel(diameter) {
+                return diameter / 2;
+            }
+            
+            // 更新平行线半距显示
+            function updateParallelHalfDisplay() {
+                const half = calculateHalfParallel(params.parallelDiameter);
+                halfParallelSpan.textContent = roundToTwoDecimals(half).toFixed(2);
+                parallelSpacing.textContent = roundToTwoDecimals(params.parallelDiameter).toFixed(2);
+            }
+            
+            // 计算距离
+            function calculateDistance(x1, y1, x2, y2) {
+                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            }
+            
+            // 计算旋转角度（从旋转中心到起点的连线，与从旋转中心到目标点的连线之间的夹角）
+            function calculateRotationAngle(centerX, centerY, startX, startY, targetX, targetY) {
+                const startVecX = startX - centerX;
+                const startVecY = startY - centerY;
+                const targetVecX = targetX - centerX;
+                const targetVecY = targetY - centerY;
+                
+                const startAngle = Math.atan2(startVecY, startVecX) * 180 / Math.PI;
+                const targetAngle = Math.atan2(targetVecY, targetVecX) * 180 / Math.PI;
+                
+                let rotationAngle = targetAngle - startAngle;
+                
+                // 将角度调整到-180到180度之间
+                if (rotationAngle > 180) {
+                    rotationAngle -= 360;
+                } else if (rotationAngle < -180) {
+                    rotationAngle += 360;
+                }
+                
+                let direction = rotationAngle >= 0 ? '逆时针' : '顺时针';
+                const radius = calculateDistance(centerX, centerY, targetX, targetY);
+                
+                return {
+                    rotationAngle: rotationAngle,
+                    absoluteAngle: Math.abs(rotationAngle),
+                    direction: direction,
+                    startAngle: startAngle,
+                    targetAngle: targetAngle,
+                    radius: radius,
+                    startVecX: startVecX,
+                    startVecY: startVecY,
+                    targetVecX: targetVecX,
+                    targetVecY: targetVecY
+                };
+            }
+            
+            // 计算旋转后的坐标（绕旋转中心旋转）
+            function rotatePointAroundOrigin(pointX, pointY, originX, originY, angleDeg) {
+                if (angleDeg === 0) {
+                    return { x: pointX, y: pointY };
+                }
+                
+                const angleRad = angleDeg * Math.PI / 180;
+                const cosAngle = Math.cos(angleRad);
+                const sinAngle = Math.sin(angleRad);
+                
+                // 将点平移到原点
+                const translatedX = pointX - originX;
+                const translatedY = pointY - originY;
+                
+                // 旋转
+                const rotatedX = translatedX * cosAngle - translatedY * sinAngle;
+                const rotatedY = translatedX * sinAngle + translatedY * cosAngle;
+                
+                // 平移回原位置
+                return {
+                    x: rotatedX + originX,
+                    y: rotatedY + originY
+                };
+            }
+            
+            // 计算几何参数 - 支持增量编程和图形旋转（起点不旋转）
+            function calculateGeometry() {
+                const { r1X, r1Y, r2X, r2Y, startX, startY, originX, originY } = params;
+                const parallelDistance = calculateHalfParallel(params.parallelDiameter);
+                
+                // 图形旋转：只旋转R1、R2和中心线，不旋转起点
+                let rotatedR1X = r1X, rotatedR1Y = r1Y;
+                let rotatedR2X = r2X, rotatedR2Y = r2Y;
+                // 起点不旋转，保持原始位置
+                let rotatedStartX = startX, rotatedStartY = startY;
+                
+                if (graphRotation !== 0) {
+                    // 旋转R1和R2
+                    const rotatedR1 = rotatePointAroundOrigin(r1X, r1Y, originX, originY, graphRotation);
+                    rotatedR1X = rotatedR1.x;
+                    rotatedR1Y = rotatedR1.y;
+                    
+                    const rotatedR2 = rotatePointAroundOrigin(r2X, r2Y, originX, originY, graphRotation);
+                    rotatedR2X = rotatedR2.x;
+                    rotatedR2Y = rotatedR2.y;
+                    // 起点不旋转
+                }
+                
+                const dx = rotatedR2X - rotatedR1X;
+                const dy = rotatedR2Y - rotatedR1Y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                
+                if (length === 0) {
+                    return { length: 0, connectionLines: [], circles: {} };
+                }
+                
+                const ux = dx / length;
+                const uy = dy / length;
+                const vx = -uy;
+                const vy = ux;
+                
+                // 计算从旋转中心到起点的旋转角度（使用旋转后的起点坐标）
+                const centerLineRotation = calculateRotationAngle(originX, originY, rotatedStartX, rotatedStartY, rotatedR2X, rotatedR2Y);
+                
+                const circles = {};
+                const allCircles = [];
+                const circleOrder = [];
+                
+                // 先计算所有槽的绝对位置
+                const absolutePositions = [];
+                
+                for (const cCircle of cCircles) {
+                    let absoluteMoveDistance = cCircle.moveDistance;
+                    let absoluteOffsetDistance = cCircle.offsetDistance;
+                    
+                    // 如果是增量编程，需要计算绝对位置
+                    if (cCircle.type === 'incremental' && cCircle.baseCircleId) {
+                        const baseCircle = cCircles.find(c => c.id === cCircle.baseCircleId);
+                        if (baseCircle) {
+                            const baseAbsolute = absolutePositions.find(p => p.id === baseCircle.id);
+                            if (baseAbsolute) {
+                                absoluteMoveDistance = baseAbsolute.moveDist + cCircle.moveDistance;
+                                absoluteOffsetDistance = baseAbsolute.offsetDist + cCircle.offsetDistance;
+                            }
+                        }
+                    }
+                    
+                    // 保存绝对位置
+                    absolutePositions.push({
+                        id: cCircle.id,
+                        moveDist: absoluteMoveDistance,
+                        offsetDist: absoluteOffsetDistance
+                    });
+                    
+                    // 创建下排槽（负偏移） - 使用旋转后的R1坐标
+                    const circleDown = {
+                        x: rotatedR1X + absoluteMoveDistance * ux - absoluteOffsetDistance * vx,
+                        y: rotatedR1Y + absoluteMoveDistance * uy - absoluteOffsetDistance * vy,
+                        moveDist: absoluteMoveDistance,
+                        offsetDist: -absoluteOffsetDistance,
+                        type: cCircle.name,
+                        name: `${cCircle.name}-下`,
+                        id: cCircle.id,
+                        category: 'C',
+                        orderIndex: (cCircle.id - 1) * 2, // 下排在前面
+                        originalMove: cCircle.moveDistance,
+                        originalOffset: cCircle.offsetDistance,
+                        positionType: cCircle.type,
+                        baseCircleId: cCircle.baseCircleId,
+                        isUpper: false
+                    };
+                    
+                    // 创建上排槽（正偏移） - 使用旋转后的R1坐标
+                    const circleUp = {
+                        x: rotatedR1X + absoluteMoveDistance * ux + absoluteOffsetDistance * vx,
+                        y: rotatedR1Y + absoluteMoveDistance * uy + absoluteOffsetDistance * vy,
+                        moveDist: absoluteMoveDistance,
+                        offsetDist: absoluteOffsetDistance,
+                        type: cCircle.name,
+                        name: `${cCircle.name}-上`,
+                        id: cCircle.id,
+                        category: 'C',
+                        orderIndex: (cCircle.id - 1) * 2 + 1, // 上排在后面
+                        originalMove: cCircle.moveDistance,
+                        originalOffset: cCircle.offsetDistance,
+                        positionType: cCircle.type,
+                        baseCircleId: cCircle.baseCircleId,
+                        isUpper: true
+                    };
+                    
+                    circles[`circle${cCircle.id}Down`] = circleDown;
+                    circles[`circle${cCircle.id}Up`] = circleUp;
+                    
+                    // 先添加下排，再添加上排
+                    circleOrder.push(circleDown, circleUp);
+                    allCircles.push(circleDown, circleUp);
+                }
+                
+                // 添加Q槽 - 使用旋转后的R1坐标
+                for (const qCircle of qCircles) {
+                    const qCircleObj = {
+                        x: rotatedR1X + qCircle.xOffset,
+                        y: rotatedR1Y + qCircle.yOffset,
+                        xOffset: qCircle.xOffset,
+                        yOffset: qCircle.yOffset,
+                        type: qCircle.name,
+                        name: qCircle.name,
+                        id: qCircle.id,
+                        category: 'Q',
+                        orderIndex: circleOrder.length
+                    };
+                    
+                    circles[`qCircle${qCircle.id}`] = qCircleObj;
+                    circleOrder.push(qCircleObj);
+                    allCircles.push(qCircleObj);
+                }
+                
+                // 计算每个槽的旋转角度和距离（从旋转中心到C点的距离）
+                for (const circle of allCircles) {
+                    const rotation = calculateRotationAngle(originX, originY, rotatedStartX, rotatedStartY, circle.x, circle.y);
+                    circle.rotationAngle = rotation.rotationAngle;
+                    circle.absoluteAngle = rotation.absoluteAngle;
+                    circle.direction = rotation.direction;
+                    circle.startAngle = rotation.startAngle;
+                    circle.targetAngle = rotation.targetAngle;
+                    circle.radius = rotation.radius; // 从旋转中心到C点的距离
+                    circle.distanceToStart = calculateDistance(rotatedStartX, rotatedStartY, circle.x, circle.y);
+                }
+                
+                // 固定加工顺序：C1下 → C2下 → C1上 → C2上 → Q槽
+                let sortedCircles = [...circleOrder];
+                
+                // 如果需要反转顺序
+                if (reverseOrder) {
+                    sortedCircles = [...sortedCircles].reverse();
+                }
+                
+                // 保存连接顺序用于显示
+                connectionOrder = sortedCircles.map((circle, index) => ({
+                    index: index + 1,
+                    name: circle.name,
+                    category: circle.category,
+                    rotationAngle: circle.rotationAngle,
+                    radius: circle.radius,
+                    distanceToStart: circle.distanceToStart
+                }));
+                
+                // 计算连接线数据（从旋转中心到C点的连线）
+                const connectionLines = [];
+                for (let i = 0; i < sortedCircles.length; i++) {
+                    const circle = sortedCircles[i];
+                    
+                    connectionLines.push({
+                        from: {x: originX, y: originY},
+                        to: circle,
+                        rotationAngle: circle.rotationAngle,
+                        absoluteAngle: circle.absoluteAngle,
+                        direction: circle.direction,
+                        radius: circle.radius,
+                        startAngle: circle.startAngle,
+                        targetAngle: circle.targetAngle,
+                        index: i + 1,
+                        name: circle.name,
+                        category: circle.category
+                    });
+                }
+                
+                return {
+                    dx, dy, length, ux, uy, vx, vy, 
+                    rotationAngle: centerLineRotation.rotationAngle,
+                    absoluteAngle: centerLineRotation.absoluteAngle,
+                    angleDirection: centerLineRotation.direction,
+                    circles, 
+                    parallelDistance, connectionLines, allCircles, sortedCircles,
+                    rotatedR1X, rotatedR1Y, rotatedR2X, rotatedR2Y, rotatedStartX, rotatedStartY
+                };
+            }
+            
+            // 计算所有点的边界
+            function calculateBounds() {
+                const geometry = calculateGeometry();
+                const { startX, startY, r1X, r1Y, r2X, r2Y, originX, originY } = params;
+                
+                // 使用旋转后的坐标计算边界
+                const rotatedR1X = geometry.rotatedR1X;
+                const rotatedR1Y = geometry.rotatedR1Y;
+                const rotatedR2X = geometry.rotatedR2X;
+                const rotatedR2Y = geometry.rotatedR2Y;
+                const rotatedStartX = geometry.rotatedStartX;
+                const rotatedStartY = geometry.rotatedStartY;
+                
+                let minX = Math.min(rotatedStartX, rotatedR1X, rotatedR2X, originX);
+                let maxX = Math.max(rotatedStartX, rotatedR1X, rotatedR2X, originX);
+                let minY = Math.min(rotatedStartY, rotatedR1Y, rotatedR2Y, originY);
+                let maxY = Math.max(rotatedStartY, rotatedR1Y, rotatedR2Y, originY);
+                
+                for (const circle of geometry.allCircles) {
+                    const radius = circle.category === 'C' ? 
+                        params.smallCircleDiameter2 / 2 : 
+                        params.qCircleDiameter / 2;
+                    
+                    minX = Math.min(minX, circle.x - radius);
+                    maxX = Math.max(maxX, circle.x + radius);
+                    minY = Math.min(minY, circle.y - radius);
+                    maxY = Math.max(maxY, circle.y + radius);
+                }
+                
+                const margin = 5;
+                minX -= margin;
+                maxX += margin;
+                minY -= margin;
+                maxY += margin;
+                
+                return { minX, maxX, minY, maxY };
+            }
+            
+            // 计算自适应缩放和居中
+            function calculateAutoScaleAndCenter(bounds, displayWidth, displayHeight) {
+                const { minX, maxX, minY, maxY } = bounds;
+                
+                const contentWidth = maxX - minX;
+                const contentHeight = maxY - minY;
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+                
+                if (contentWidth <= 0 || contentHeight <= 0) {
+                    return {
+                        scale: 6,
+                        offsetX: -centerX,
+                        offsetY: -centerY
+                    };
+                }
+                
+                const scaleX = displayWidth / contentWidth;
+                const scaleY = displayHeight / contentHeight;
+                let scale = Math.min(scaleX, scaleY) * 0.85;
+                
+                scale = Math.max(1, Math.min(30, scale));
+                
+                const offsetX = -centerX;
+                const offsetY = -centerY;
+                
+                return { scale, offsetX, offsetY };
+            }
+            
+            // 绘制线条辅助函数
+            function drawLine(x1, y1, x2, y2, color, lineWidth, dashPattern) {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = lineWidth;
+                
+                if (dashPattern) {
+                    ctx.setLineDash(dashPattern);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                } else {
+                    ctx.stroke();
+                }
+            }
+            
+            // 绘制圆形辅助函数
+            function drawCircle(x, y, radius, color, fill = false, stroke = false, lineWidth = 1) {
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                
+                if (fill) {
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                }
+                
+                if (stroke) {
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = lineWidth;
+                    ctx.stroke();
+                }
+            }
+            
+            // 绘制函数
+            function draw() {
+                if (isDrawing) return;
+                
+                isDrawing = true;
+                
+                requestAnimationFrame(() => {
+                    try {
+                        if (canvas.width === 0 || canvas.height === 0) {
+                            resizeCanvas();
+                        }
+                        
+                        const geometry = calculateGeometry();
+                        const { r1X, r1Y, r2X, r2Y, bigCircleDiameter, smallCircleDiameter, smallCircleDiameter2, startX, startY, originX, originY, qCircleDiameter } = params;
+                        const parallelDistance = geometry.parallelDistance;
+                        
+                        const canvasWidth = canvas.width;
+                        const canvasHeight = canvas.height;
+                        const dpr = window.devicePixelRatio || 1;
+                        
+                        const displayWidth = canvasWidth / dpr;
+                        const displayHeight = canvasHeight / dpr;
+                        
+                        let bounds = calculateBounds();
+                        const autoScaleResult = calculateAutoScaleAndCenter(bounds, displayWidth, displayHeight);
+                        currentScale = autoScaleResult.scale;
+                        viewOffsetX = autoScaleResult.offsetX;
+                        viewOffsetY = autoScaleResult.offsetY;
+                        
+                        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                        ctx.save();
+                        ctx.scale(dpr, dpr);
+                        ctx.translate(displayWidth / 2, displayHeight / 2);
+                        ctx.scale(currentScale, -currentScale);
+                        ctx.translate(viewOffsetX, viewOffsetY);
+                        
+                        // 绘制网格背景
+                        drawGrid(displayWidth, displayHeight);
+                        
+                        // 绘制坐标系
+                        drawCoordinateSystem();
+                        
+                        // 绘制旋转中心
+                        drawCircle(originX, originY, 3 / currentScale, '#000000', true, false);
+                        
+                        // 绘制从旋转中心到起点的参考线
+                        drawLine(originX, originY, geometry.rotatedStartX, geometry.rotatedStartY, 'rgba(0, 0, 0, 0.3)', 0.5 / currentScale);
+                        
+                        // 绘制中心线
+                        drawLine(geometry.rotatedR1X, geometry.rotatedR1Y, geometry.rotatedR2X, geometry.rotatedR2Y, '#40c057', 1 / currentScale, [5 / currentScale, 5 / currentScale]);
+                        
+                        // 绘制平行槽
+                        const parallelOffsetX = parallelDistance * geometry.vx;
+                        const parallelOffsetY = parallelDistance * geometry.vy;
+                        
+                        drawLine(
+                            geometry.rotatedR1X + parallelOffsetX, geometry.rotatedR1Y + parallelOffsetY,
+                            geometry.rotatedR2X + parallelOffsetX, geometry.rotatedR2Y + parallelOffsetY,
+                            '#ff922b', 0.5 / currentScale
+                        );
+                        
+                        drawLine(
+                            geometry.rotatedR1X - parallelOffsetX, geometry.rotatedR1Y - parallelOffsetY,
+                            geometry.rotatedR2X - parallelOffsetX, geometry.rotatedR2Y - parallelOffsetY,
+                            '#ff922b', 0.5 / currentScale
+                        );
+                        
+                        // 绘制大圆 R1
+                        drawCircle(geometry.rotatedR1X, geometry.rotatedR1Y, bigCircleDiameter/2, '#ff6b6b', false, true, 2 / currentScale);
+                        
+                        // 绘制小圆 R2
+                        drawCircle(geometry.rotatedR2X, geometry.rotatedR2Y, smallCircleDiameter/2, '#4dabf7', false, true, 2 / currentScale);
+                        
+                        // 绘制起点（使用原始起点坐标）
+                        drawCircle(geometry.rotatedStartX, geometry.rotatedStartY, 3 / currentScale, '#2c3e50', true, false);
+                        
+                        // 绘制所有C槽和Q槽以及它们的连接线（用实线连接C槽-旋转中心-起点）
+                        const circleColors = ['#7950f2', '#e64980', '#2ecc71', '#f39c12', '#1abc9c', '#9b59b6', '#34495e', '#e74c3c', '#3498db', '#2ecc71'];
+                        
+                        for (let i = 0; i < geometry.allCircles.length; i++) {
+                            const circle = geometry.allCircles[i];
+                            const radius = circle.category === 'C' ? 
+                                smallCircleDiameter2 / 2 : 
+                                qCircleDiameter / 2;
+                            
+                            const color = circle.category === 'C' ? 
+                                circleColors[circle.id % circleColors.length] : 
+                                '#ff9800';
+                            
+                            // 用实线连接C槽-旋转中心-起点
+                            drawLine(originX, originY, circle.x, circle.y, 'rgba(0, 0, 0, 0.5)', 1 / currentScale);
+                            drawCircle(circle.x, circle.y, radius, color, false, true, 
+                                (circle.category === 'C' ? 1.5 : 2) / currentScale);
+                            drawCircle(circle.x, circle.y, 1.5 / currentScale, color, true, false);
+                        }
+                        
+                        // 绘制R1和R2圆心
+                        drawCircle(geometry.rotatedR1X, geometry.rotatedR1Y, 3 / currentScale, '#ff6b6b', true, false);
+                        drawCircle(geometry.rotatedR2X, geometry.rotatedR2Y, 3 / currentScale, '#4dabf7', true, false);
+                        
+                        ctx.restore();
+                        
+                        // 绘制文字标注（显示增量信息）
+                        drawLabels(displayWidth, displayHeight, geometry);
+                        
+                        // 更新状态栏
+                        updateStatusBar();
+                        
+                    } catch (error) {
+                        console.error('绘制错误:', error);
+                    } finally {
+                        isDrawing = false;
+                        loadingOverlay.classList.remove('active');
+                    }
+                });
+            }
+            
+            // 绘制标签（显示增量信息）
+            function drawLabels(displayWidth, displayHeight, geometry) {
+                const dpr = window.devicePixelRatio || 1;
+                
+                ctx.save();
+                ctx.scale(dpr, dpr);
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = `bold ${Math.max(12, 14)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const worldToScreen = (worldX, worldY) => {
+                    const screenX = displayWidth/2 + (worldX + viewOffsetX) * currentScale;
+                    const screenY = displayHeight/2 - (worldY + viewOffsetY) * currentScale;
+                    return { x: screenX, y: screenY };
+                };
+                
+                const originScreen = worldToScreen(params.originX, params.originY);
+                ctx.fillText('旋转中心', originScreen.x, originScreen.y + 20);
+                
+                const startScreen = worldToScreen(geometry.rotatedStartX, geometry.rotatedStartY);
+                ctx.fillText('起点', startScreen.x, startScreen.y + 20);
+                
+                const r1Screen = worldToScreen(geometry.rotatedR1X, geometry.rotatedR1Y);
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fillText('R1', r1Screen.x, r1Screen.y - params.bigCircleDiameter/2 * currentScale - 15);
+                
+                const r2Screen = worldToScreen(geometry.rotatedR2X, geometry.rotatedR2Y);
+                ctx.fillStyle = '#4dabf7';
+                ctx.fillText('R2', r2Screen.x, r2Screen.y - params.smallCircleDiameter/2 * currentScale - 15);
+                
+                const circleColors = ['#7950f2', '#e64980', '#2ecc71', '#f39c12', '#1abc9c', '#9b59b6', '#34495e', '#e74c3c', '#3498db', '#2ecc71'];
+                
+                for (let i = 0; i < geometry.allCircles.length; i++) {
+                    const circle = geometry.allCircles[i];
+                    const radius = circle.category === 'C' ? 
+                        params.smallCircleDiameter2 / 2 : 
+                        params.qCircleDiameter / 2;
+                    
+                    const color = circle.category === 'C' ? 
+                        circleColors[circle.id % circleColors.length] : 
+                        '#ff9800';
+                    
+                    const circleScreen = worldToScreen(circle.x, circle.y);
+                    ctx.fillStyle = color;
+                    ctx.font = `bold ${Math.max(10, 12)}px Arial`;
+                    
+                    // 显示槽信息
+                    let labelText = circle.name;
+                    if (circle.category === 'C') {
+                        if (circle.positionType === 'incremental') {
+                            labelText += ` (Δ${circle.originalMove.toFixed(2)},${circle.originalOffset.toFixed(2)})`;
+                        }
+                        labelText += `\n${circle.rotationAngle.toFixed(1)}°`;
+                    } else {
+                        labelText += `\n${circle.rotationAngle.toFixed(1)}°`;
+                    }
+                    
+                    const labelY = circleScreen.y + radius * currentScale + 20;
+                    ctx.fillText(labelText, circleScreen.x, labelY);
+                }
+                
+                ctx.restore();
+            }
+            
+            // 绘制网格
+            function drawGrid(displayWidth, displayHeight) {
+                const gridSize = 50;
+                
+                ctx.strokeStyle = 'var(--grid-color)';
+                ctx.lineWidth = 0.5 / currentScale;
+                
+                const visibleLeft = -displayWidth/2 / currentScale - viewOffsetX;
+                const visibleRight = displayWidth/2 / currentScale - viewOffsetX;
+                const visibleBottom = -displayHeight/2 / currentScale - viewOffsetY;
+                const visibleTop = displayHeight/2 / currentScale - viewOffsetY;
+                
+                const startX = Math.floor(visibleLeft / gridSize) * gridSize;
+                const endX = Math.ceil(visibleRight / gridSize) * gridSize;
+                
+                for (let x = startX; x <= endX; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, visibleBottom);
+                    ctx.lineTo(x, visibleTop);
+                    ctx.stroke();
+                }
+                
+                const startY = Math.floor(visibleBottom / gridSize) * gridSize;
+                const endY = Math.ceil(visibleTop / gridSize) * gridSize;
+                
+                for (let y = startY; y <= endY; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(visibleLeft, y);
+                    ctx.lineTo(visibleRight, y);
+                    ctx.stroke();
+                }
+            }
+            
+            // 绘制坐标系
+            function drawCoordinateSystem() {
+                ctx.beginPath();
+                ctx.moveTo(-10000, 0);
+                ctx.lineTo(10000, 0);
+                ctx.strokeStyle = 'var(--axis-color)';
+                ctx.lineWidth = 1.5 / currentScale;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, -10000);
+                ctx.lineTo(0, 10000);
+                ctx.strokeStyle = 'var(--axis-color)';
+                ctx.lineWidth = 1.5 / currentScale;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(0, 0, 3 / currentScale, 0, Math.PI * 2);
+                ctx.fillStyle = 'var(--axis-color)';
+                ctx.fill();
+            }
+            
+            // 更新数据显示
+            function updateDataDisplay() {
+                const geometry = calculateGeometry();
+                const { r1X, r1Y, r2X, r2Y, startX, startY, originX, originY } = params;
+                
+                const rotationRadiusValue = calculateDistance(originX, originY, startX, startY);
+                
+                // 显示原始坐标（用户输入的坐标）
+                originCoord.textContent = `(${roundToTwoDecimals(originX).toFixed(2)}, ${roundToTwoDecimals(originY).toFixed(2)})`;
+                startCoord.textContent = `(${roundToTwoDecimals(startX).toFixed(2)}, ${roundToTwoDecimals(startY).toFixed(2)})`;
+                r1Coord.textContent = `(${roundToTwoDecimals(r1X).toFixed(2)}, ${roundToTwoDecimals(r1Y).toFixed(2)})`;
+                r2Coord.textContent = `(${roundToTwoDecimals(r2X).toFixed(2)}, ${roundToTwoDecimals(r2Y).toFixed(2)})`;
+                
+                rotationRadius.textContent = roundToTwoDecimals(rotationRadiusValue).toFixed(2);
+                centerLength.textContent = roundToTwoDecimals(geometry.length).toFixed(2);
+                centerAngle.textContent = `${roundToTwoDecimals(geometry.rotationAngle).toFixed(2)}° (${geometry.angleDirection})`;
+                
+                circleCount.textContent = cCircles.length;
+                qCircleCountDisplay.textContent = qCircles.length;
+                
+                // 显示图形旋转信息
+                let rotationDisplayText = `${graphRotation}°`;
+                if (graphRotation !== 0) {
+                    rotationDisplayText += ` (已旋转)`;
+                }
+                graphRotationDisplay.textContent = rotationDisplayText;
+                
+                if (qCircles.length > 0) {
+                    connectionTitle.textContent = `旋转加工数据 (${cCircles.length}个C槽 + ${qCircles.length}个Q槽)${reverseOrder ? ' [反转]' : ''}${graphRotation !== 0 ? ` [图形旋转${graphRotation}°]` : ''}`;
+                } else {
+                    connectionTitle.textContent = `旋转加工数据 (${cCircles.length}个C槽)${reverseOrder ? ' [反转]' : ''}${graphRotation !== 0 ? ` [图形旋转${graphRotation}°]` : ''}`;
+                }
+                
+                connectionTableBody.innerHTML = '';
+                
+                for (let i = 0; i < geometry.connectionLines.length; i++) {
+                    const line = geometry.connectionLines[i];
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>#${line.index}</td>
+                        <td>${line.name} (${line.category})</td>
+                        <td class="connection-line angle">${roundToTwoDecimals(line.rotationAngle).toFixed(1)}°</td>
+                        <td class="connection-line length">${roundToTwoDecimals(line.radius).toFixed(2)}</td>
+                        <td>${line.direction}</td>
+                    `;
+                    connectionTableBody.appendChild(row);
+                }
+                
+                updateParallelHalfDisplay();
+                generateCNCPrograms();
+            }
+            
+            // 生成CNC加工程序 - 直径编程，考虑图形旋转（起点不旋转）
+            function generateCNCPrograms() {
+                const geometry = calculateGeometry();
+                const cuttingDepth = parseFloat(cuttingDepthInput.value) || 0;
+                const feedRate = parseFloat(feedRateInput.value) || 0;
+                
+                if (geometry.allCircles.length < 2) {
+                    programOutput1.textContent = "无法生成程序：需要至少两个槽";
+                    programOutput2.textContent = "无法生成程序：需要至少两个槽";
+                    return;
+                }
+                
+                // 获取下排和上排的C槽
+                const cCircleDown = []; // 下排C槽
+                const cCircleUp = [];   // 上排C槽
+                
+                for (const circle of geometry.allCircles) {
+                    if (circle.category === 'C') {
+                        if (circle.name.includes('下')) {
+                            cCircleDown.push(circle);
+                        } else if (circle.name.includes('上')) {
+                            cCircleUp.push(circle);
+                        }
+                    }
+                }
+                
+                // 按ID排序
+                cCircleDown.sort((a, b) => a.id - b.id);
+                cCircleUp.sort((a, b) => a.id - b.id);
+                
+                const roundedCuttingDepth = roundToTwoDecimals(cuttingDepth);
+                
+                // 基础程序部分
+                let baseProgram = `$1
+T0
+G98
+G00Z50.0`;
+                
+                // 处理下排C槽
+                if (cCircleDown.length > 0) {
+                    // C1下：绝对坐标 XC 格式（直径编程）
+                    const c1Down = cCircleDown.find(c => c.id === 1);
+                    if (c1Down) {
+                        // 直径编程：X轴值是直径值，需要将半径乘以2
+                        // 起点不旋转，C槽旋转，计算角度时使用原始起点
+                        const diameterValue = roundToTwoDecimals(c1Down.radius * 2);
+                        
+                        baseProgram += `
+X${diameterValue.toFixed(2)}C${roundToTwoDecimals(c1Down.rotationAngle).toFixed(2)}
+Z2.0
+G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
+G04X0.3
+G0Z2.0`;
+                    }
+                    
+                    // C2下：增量坐标 UH 格式（相对于C1下，直径编程）
+                    if (cCircleDown.length > 1) {
+                        const c2Down = cCircleDown.find(c => c.id === 2);
+                        const c1DownRef = cCircleDown.find(c => c.id === 1);
+                        if (c2Down && c1DownRef) {
+                            // 直径编程：U轴值是直径增量，需要将半径差乘以2
+                            const deltaRadius = roundToTwoDecimals((c2Down.radius - c1DownRef.radius) * 2);
+                            const deltaAngle = roundToTwoDecimals(c2Down.rotationAngle - c1DownRef.rotationAngle);
+                            
+                            baseProgram += `
+U${deltaRadius.toFixed(2)}H${deltaAngle.toFixed(2)}
+Z2.0
+G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
+G04X0.3
+G0Z2.0`;
+                        }
+                    }
+                }
+                
+                // 处理上排C槽
+                if (cCircleUp.length > 0) {
+                    // C1上：绝对坐标 XC 格式（直径编程）
+                    const c1Up = cCircleUp.find(c => c.id === 1);
+                    if (c1Up) {
+                        // 直径编程：X轴值是直径值，需要将半径乘以2
+                        const diameterValue = roundToTwoDecimals(c1Up.radius * 2);
+                        
+                        baseProgram += `
+X${diameterValue.toFixed(2)}C${roundToTwoDecimals(c1Up.rotationAngle).toFixed(2)}
+Z2.0
+G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
+G04X0.3
+G0Z2.0`;
+                    }
+                    
+                    // C2上：增量坐标 UH 格式（相对于C1上，直径编程）
+                    if (cCircleUp.length > 1) {
+                        const c2Up = cCircleUp.find(c => c.id === 2);
+                        const c1UpRef = cCircleUp.find(c => c.id === 1);
+                        if (c2Up && c1UpRef) {
+                            // 直径编程：U轴值是直径增量，需要将半径差乘以2
+                            const deltaRadius = roundToTwoDecimals((c2Up.radius - c1UpRef.radius) * 2);
+                            const deltaAngle = roundToTwoDecimals(c2Up.rotationAngle - c1UpRef.rotationAngle);
+                            
+                            baseProgram += `
+U${deltaRadius.toFixed(2)}H${deltaAngle.toFixed(2)}
+Z2.0
+G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
+G04X0.3
+G0Z2.0`;
+                        }
+                    }
+                }
+                
+                // 处理Q槽（如果有） - 使用绝对坐标，直径编程
+                for (const circle of geometry.allCircles) {
+                    if (circle.category === 'Q') {
+                        // 直径编程：X轴值是直径值，需要将半径乘以2
+                        const diameterValue = roundToTwoDecimals(circle.radius * 2);
+                        
+                        baseProgram += `
+X${diameterValue.toFixed(2)}C${roundToTwoDecimals(circle.rotationAngle).toFixed(2)}
+Z2.0
+G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
+G04X0.3
+G0Z2.0`;
+                    }
+                }
+                
+                baseProgram += `
+G0Z50.0`;
+                
+                // 第一套程序：只生成 $1 部分
+                const program1 = baseProgram;
+                
+                // 第二套程序：生成 $1 和 $2 部分
+                const program2 = baseProgram + `
+$2`;
+                
+                programOutput1.textContent = program1;
+                programOutput2.textContent = program2;
+            }
+            
+            // 应用图形旋转（起点不旋转）
+            function applyRotation() {
+                const rotationType = rotationAngleSelect.value;
+                let angle = 0;
+                
+                if (rotationType === 'custom') {
+                    angle = parseFloat(customAngleValue.value) || 0;
+                } else {
+                    angle = parseInt(rotationType) || 0;
+                }
+                
+                graphRotation = angle;
+                
+                // 更新状态栏
+                updateStatusBar();
+                
+                // 更新数据显示
+                updateDataDisplay();
+                
+                // 重绘画布
+                draw();
+            }
+            
+            // 反转加工顺序
+            function reverseConnectionOrder() {
+                reverseOrder = !reverseOrder;
+                reverseBtn.innerHTML = reverseOrder ? '↩️ 恢复正常顺序' : '🔄 反转加工顺序';
+                reverseBtn.classList.toggle('active', reverseOrder);
+                
+                updateDataDisplay();
+                draw();
+            }
+            
+            // 更新状态栏
+            function updateStatusBar() {
+                const zoomPercent = Math.round((currentScale / 6) * 100);
+                let rotationText = graphRotation !== 0 ? ` | 图形旋转: ${graphRotation}° (起点固定)` : '';
+                statusBar.textContent = `缩放: ${zoomPercent}% | 坐标系: Y轴向上为正${rotationText}${reverseOrder ? ' | 加工顺序已反转' : ''}`;
+            }
+            
+            // 渲染C槽列表 - 支持增量编程
+            function renderCCircleList() {
+                cCircleList.innerHTML = '';
+                
+                for (const cCircle of cCircles) {
+                    const item = document.createElement('div');
+                    item.className = 'c-circle-item';
+                    
+                    // 构建位置类型选项
+                    let positionTypeOptions = '';
+                    if (cCircle.id === 1) {
+                        // 第一个槽只能是绝对位置
+                        positionTypeOptions = `
+                            <option value="absolute" selected>绝对位置</option>
+                            <option value="incremental" disabled>增量位置（不可选）</option>
+                        `;
+                    } else {
+                        // 其他槽可以选择绝对或增量
+                        const isAbsolute = cCircle.type === 'absolute';
+                        const isIncremental = cCircle.type === 'incremental';
+                        
+                        positionTypeOptions = `
+                            <option value="absolute" ${isAbsolute ? 'selected' : ''}>绝对位置</option>
+                            <option value="incremental" ${isIncremental ? 'selected' : ''}>增量位置</option>
+                        `;
+                    }
+                    
+                    // 构建基础槽选择选项
+                    let baseCircleOptions = '<option value="">-- 选择参考槽 --</option>';
+                    for (const baseCircle of cCircles) {
+                        if (baseCircle.id < cCircle.id) {
+                            baseCircleOptions += `<option value="${baseCircle.id}" ${cCircle.baseCircleId === baseCircle.id ? 'selected' : ''}>${baseCircle.name}</option>`;
+                        }
+                    }
+                    
+                    // 是否显示基础槽选择（只有增量编程时才显示）
+                    const baseCircleDisplay = cCircle.type === 'incremental' ? 'block' : 'none';
+                    
+                    item.innerHTML = `
+                        <div class="c-circle-header">
+                            <div class="c-circle-title">${cCircle.name}</div>
+                            <button class="remove-circle-btn" data-id="${cCircle.id}">删除</button>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="positionType${cCircle.id}">位置类型：</label>
+                                <select id="positionType${cCircle.id}" class="position-type-input">
+                                    ${positionTypeOptions}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="moveDistance${cCircle.id}">平移距离：</label>
+                                <input type="number" id="moveDistance${cCircle.id}" value="${roundToTwoDecimals(cCircle.moveDistance).toFixed(2)}" step="0.1" class="circle-input">
+                                <div class="info-text" id="moveDistanceHelp${cCircle.id}" style="font-size: 10px;">
+                                    ${cCircle.type === 'incremental' ? '相对于参考槽的增量距离' : '从R1圆开始的绝对距离'}
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="offsetDistance${cCircle.id}">垂直偏移：</label>
+                                <input type="number" id="offsetDistance${cCircle.id}" value="${roundToTwoDecimals(cCircle.offsetDistance).toFixed(2)}" step="0.1" class="circle-input">
+                                <div class="info-text" id="offsetDistanceHelp${cCircle.id}" style="font-size: 10px;">
+                                    ${cCircle.type === 'incremental' ? '相对于参考槽的增量偏移' : '从中心线的绝对偏移'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-row" id="baseCircleRow${cCircle.id}" style="display: ${baseCircleDisplay};">
+                            <div class="input-group">
+                                <label for="baseCircle${cCircle.id}">参考槽：</label>
+                                <select id="baseCircle${cCircle.id}" class="base-circle-input">
+                                    ${baseCircleOptions}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                    cCircleList.appendChild(item);
+                }
+            }
+            
+            // 渲染Q槽列表
+            function renderQCircleList() {
+                qCircleListContainer.innerHTML = '';
+                
+                for (const qCircle of qCircles) {
+                    const item = document.createElement('div');
+                    item.className = 'q-circle-item';
+                    item.innerHTML = `
+                        <div class="q-circle-header">
+                            <div class="q-circle-title">${qCircle.name}</div>
+                            <button class="remove-q-circle-btn" data-id="${qCircle.id}">删除</button>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="qCircleX${qCircle.id}">X轴平移：</label>
+                                <input type="number" id="qCircleX${qCircle.id}" value="${roundToTwoDecimals(qCircle.xOffset).toFixed(2)}" step="0.1" class="q-circle-input">
+                            </div>
+                            <div class="input-group">
+                                <label for="qCircleY${qCircle.id}">Y轴偏移：</label>
+                                <input type="number" id="qCircleY${qCircle.id}" value="${roundToTwoDecimals(qCircle.yOffset).toFixed(2)}" step="0.1" class="q-circle-input">
+                            </div>
+                        </div>
+                    `;
+                    qCircleListContainer.appendChild(item);
+                }
+            }
+            
+            // 添加C槽 - 智能增量编程
+            function addCCircle() {
+                // 获取最后一个C槽
+                const lastCircle = cCircles.length > 0 ? cCircles[cCircles.length - 1] : null;
+                
+                // 默认使用增量编程，基于最后一个槽
+                const newCircle = {
+                    id: nextCircleId++,
+                    moveDistance: 2.0,
+                    offsetDistance: 0.0,
+                    name: `C${nextCircleId - 1}`,
+                    type: lastCircle ? 'incremental' : 'absolute',
+                    baseCircleId: lastCircle ? lastCircle.id : null
+                };
+                
+                cCircles.push(newCircle);
+                renderCCircleList();
+                updateAll();
+            }
+            
+            // 添加Q槽
+            function addQCircle() {
+                const xOffset = parseFloat(defaultQCircleXInput.value) || 3;
+                const yOffset = parseFloat(defaultQCircleYInput.value) || 0;
+                
+                const newQCircle = {
+                    id: nextQCircleId++,
+                    xOffset: xOffset,
+                    yOffset: yOffset,
+                    name: `Q${nextQCircleId - 1}`
+                };
+                qCircles.push(newQCircle);
+                renderQCircleList();
+                updateAll();
+            }
+            
+            // 删除C槽
+            function removeCCircle(id) {
+                if (cCircles.length <= 1) {
+                    alert('至少需要保留一个C槽');
+                    return;
+                }
+                
+                cCircles = cCircles.filter(circle => circle.id !== id);
+                renderCCircleList();
+                updateAll();
+            }
+            
+            // 删除Q槽
+            function removeQCircle(id) {
+                qCircles = qCircles.filter(circle => circle.id !== id);
+                renderQCircleList();
+                updateAll();
+            }
+            
+            // 调整画布尺寸
+            function resizeCanvas() {
+                const wrapperRect = canvasWrapper.getBoundingClientRect();
+                const wrapperWidth = wrapperRect.width;
+                const wrapperHeight = wrapperRect.height;
+                
+                if (wrapperWidth <= 0 || wrapperHeight <= 0) {
+                    canvas.width = 800;
+                    canvas.height = 600;
+                    return true;
+                }
+                
+                const dpr = window.devicePixelRatio || 1;
+                
+                canvas.style.width = wrapperWidth + 'px';
+                canvas.style.height = wrapperHeight + 'px';
+                
+                canvas.width = Math.floor(wrapperWidth * dpr);
+                canvas.height = Math.floor(wrapperHeight * dpr);
+                
+                return true;
+            }
+            
+            // 从输入框更新参数
+            function updateParamsFromInputs() {
+                params.r1X = parseFloat(r1XInput.value) || 0;
+                params.r1Y = parseFloat(r1YInput.value) || 0;
+                params.r2X = parseFloat(r2XInput.value) || 0;
+                params.r2Y = parseFloat(r2YInput.value) || 0;
+                params.bigCircleDiameter = parseFloat(bigCircleDiameterInput.value) || 0;
+                params.smallCircleDiameter = parseFloat(smallCircleDiameterInput.value) || 0;
+                params.parallelDiameter = parseFloat(parallelDiameterInput.value) || 0;
+                params.smallCircleDiameter2 = parseFloat(smallCircleDiameter2Input.value) || 0;
+                params.qCircleDiameter = parseFloat(qCircleDiameterInput.value) || 0;
+                params.qCircleX = parseFloat(defaultQCircleXInput.value) || 0;
+                params.qCircleY = parseFloat(defaultQCircleYInput.value) || 0;
+                params.startX = parseFloat(startXInput.value) || 0;
+                params.startY = parseFloat(startYInput.value) || 0;
+                params.originX = parseFloat(originXInput.value) || 0;
+                params.originY = parseFloat(originYInput.value) || 0;
+                params.cuttingDepth = parseFloat(cuttingDepthInput.value) || 0;
+                params.feedRate = parseFloat(feedRateInput.value) || 0;
+            }
+            
+            // 更新C槽参数 - 支持增量编程
+            function updateCCircleParams() {
+                for (const cCircle of cCircles) {
+                    const moveInput = document.getElementById(`moveDistance${cCircle.id}`);
+                    const offsetInput = document.getElementById(`offsetDistance${cCircle.id}`);
+                    const typeSelect = document.getElementById(`positionType${cCircle.id}`);
+                    const baseCircleSelect = document.getElementById(`baseCircle${cCircle.id}`);
+                    
+                    if (moveInput) cCircle.moveDistance = parseFloat(moveInput.value) || 0;
+                    if (offsetInput) cCircle.offsetDistance = parseFloat(offsetInput.value) || 0;
+                    if (typeSelect) cCircle.type = typeSelect.value;
+                    if (baseCircleSelect && baseCircleSelect.value) {
+                        cCircle.baseCircleId = parseInt(baseCircleSelect.value);
+                    } else if (cCircle.type === 'incremental' && cCircle.id > 1) {
+                        // 如果没有选择参考槽，默认基于前一个槽
+                        cCircle.baseCircleId = cCircles.find(c => c.id === cCircle.id - 1)?.id || null;
+                    }
+                    
+                    // 更新帮助文本和基础槽选择显示
+                    const moveHelp = document.getElementById(`moveDistanceHelp${cCircle.id}`);
+                    const offsetHelp = document.getElementById(`offsetDistanceHelp${cCircle.id}`);
+                    const baseCircleRow = document.getElementById(`baseCircleRow${cCircle.id}`);
+                    
+                    if (moveHelp && offsetHelp && baseCircleRow) {
+                        if (cCircle.type === 'incremental') {
+                            moveHelp.textContent = '相对于参考槽的增量距离';
+                            offsetHelp.textContent = '相对于参考槽的增量偏移';
+                            baseCircleRow.style.display = 'block';
+                        } else {
+                            moveHelp.textContent = '从R1圆开始的绝对距离';
+                            offsetHelp.textContent = '从中心线的绝对偏移';
+                            baseCircleRow.style.display = 'none';
+                        }
+                    }
+                }
+            }
+            
+            // 更新Q槽参数
+            function updateQCircleParams() {
+                for (const qCircle of qCircles) {
+                    const xInput = document.getElementById(`qCircleX${qCircle.id}`);
+                    const yInput = document.getElementById(`qCircleY${qCircle.id}`);
+                    
+                    if (xInput) qCircle.xOffset = parseFloat(xInput.value) || 0;
+                    if (yInput) qCircle.yOffset = parseFloat(yInput.value) || 0;
+                }
+            }
+            
+            // 更新所有数据
+            function updateAll() {
+                updateParamsFromInputs();
+                updateCCircleParams();
+                updateQCircleParams();
+                updateDataDisplay();
+                draw();
+            }
+            
+            // 设置输入观察器
+            function setupInputObserver() {
+                const inputElements = [
+                    r1XInput, r1YInput, r2XInput, r2YInput,
+                    bigCircleDiameterInput, smallCircleDiameterInput,
+                    parallelDiameterInput, smallCircleDiameter2Input,
+                    qCircleDiameterInput, defaultQCircleXInput, defaultQCircleYInput,
+                    startXInput, startYInput, originXInput, originYInput,
+                    cuttingDepthInput, feedRateInput
+                ];
+                
+                // 为所有输入框添加事件监听
+                inputElements.forEach(input => {
+                    input.addEventListener('input', () => {
+                        loadingOverlay.classList.add('active');
+                        setTimeout(() => {
+                            updateAll();
+                        }, 100);
+                    });
+                });
+                
+                // 为C槽和Q槽输入框添加事件监听
+                document.addEventListener('input', (e) => {
+                    if (e.target.classList.contains('circle-input') || 
+                        e.target.classList.contains('q-circle-input')) {
+                        loadingOverlay.classList.add('active');
+                        setTimeout(() => {
+                            updateAll();
+                        }, 100);
+                    }
+                });
+                
+                // 为位置类型和基础槽选择添加事件监听
+                document.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('position-type-input') || 
+                        e.target.classList.contains('base-circle-input')) {
+                        loadingOverlay.classList.add('active');
+                        setTimeout(() => {
+                            updateCCircleParams();
+                            updateAll();
+                        }, 100);
+                    }
+                });
+                
+                // 平行槽直径特殊处理
+                parallelDiameterInput.addEventListener('input', () => {
+                    const value = parseFloat(parallelDiameterInput.value) || 0;
+                    const half = calculateHalfParallel(value);
+                    halfParallelSpan.textContent = roundToTwoDecimals(half).toFixed(2);
+                    
+                    loadingOverlay.classList.add('active');
+                    setTimeout(() => {
+                        updateAll();
+                    }, 100);
+                });
+                
+                // 旋转角度选择变化
+                rotationAngleSelect.addEventListener('change', () => {
+                    if (rotationAngleSelect.value === 'custom') {
+                        customAngleGroup.style.display = 'block';
+                    } else {
+                        customAngleGroup.style.display = 'none';
+                    }
+                });
+            }
+            
+            // 设置尺寸观察器
+            function setupResizeObserver() {
+                if (!('ResizeObserver' in window)) {
+                    window.addEventListener('resize', () => {
+                        setTimeout(() => {
+                            resizeCanvas();
+                            draw();
+                        }, 250);
+                    });
+                    return;
+                }
+                
+                resizeObserver = new ResizeObserver((entries) => {
+                    for (let entry of entries) {
+                        if (entry.target === canvasWrapper) {
+                            clearTimeout(resizeObserver.timeout);
+                            resizeObserver.timeout = setTimeout(() => {
+                                resizeCanvas();
+                                draw();
+                            }, 250);
+                        }
+                    }
+                });
+                
+                resizeObserver.observe(canvasWrapper);
+            }
+            
+            // 程序切换
+            function switchProgram(tabId) {
+                currentProgram = tabId;
+                
+                programTabs.forEach(tab => {
+                    if (tab.getAttribute('data-tab') === tabId) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+                
+                document.querySelectorAll('.program-content').forEach(content => {
+                    if (content.id === tabId + 'Content') {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            }
+            
+            // 导出文件
+            function exportFile() {
+                fileNameInput.value = '';
+                exportModal.classList.add('active');
+                
+                setTimeout(() => {
+                    fileNameInput.focus();
+                }, 100);
+            }
+            
+            // 执行导出
+            function executeExport() {
+                let fileName = fileNameInput.value.trim();
+                if (!fileName) {
+                    alert('请输入文件名');
+                    fileNameInput.focus();
+                    return;
+                }
+                
+                let programContent = '';
+                
+                if (currentProgram === 'program1') {
+                    programContent = programOutput1.textContent;
+                } else {
+                    programContent = programOutput2.textContent;
+                }
+                
+                const blob = new Blob([programContent], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                URL.revokeObjectURL(link.href);
+                exportModal.classList.remove('active');
+            }
+            
+            // 初始化函数
+            function init() {
+                // 设置默认值
+                r1XInput.value = roundToTwoDecimals(params.r1X).toFixed(2);
+                r1YInput.value = roundToTwoDecimals(params.r1Y).toFixed(2);
+                r2XInput.value = roundToTwoDecimals(params.r2X).toFixed(2);
+                r2YInput.value = roundToTwoDecimals(params.r2Y).toFixed(2);
+                bigCircleDiameterInput.value = roundToTwoDecimals(params.bigCircleDiameter).toFixed(2);
+                smallCircleDiameterInput.value = roundToTwoDecimals(params.smallCircleDiameter).toFixed(2);
+                parallelDiameterInput.value = roundToTwoDecimals(params.parallelDiameter).toFixed(2);
+                smallCircleDiameter2Input.value = roundToTwoDecimals(params.smallCircleDiameter2).toFixed(2);
+                qCircleDiameterInput.value = roundToTwoDecimals(params.qCircleDiameter).toFixed(2);
+                defaultQCircleXInput.value = roundToTwoDecimals(params.qCircleX).toFixed(2);
+                defaultQCircleYInput.value = roundToTwoDecimals(params.qCircleY).toFixed(2);
+                startXInput.value = roundToTwoDecimals(params.startX).toFixed(2);
+                startYInput.value = roundToTwoDecimals(params.startY).toFixed(2);
+                originXInput.value = roundToTwoDecimals(params.originX).toFixed(2);
+                originYInput.value = roundToTwoDecimals(params.originY).toFixed(2);
+                cuttingDepthInput.value = roundToTwoDecimals(params.cuttingDepth).toFixed(2);
+                feedRateInput.value = params.feedRate.toFixed(0);
+                
+                // 渲染C槽和Q槽列表
+                renderCCircleList();
+                renderQCircleList();
+                
+                // 设置观察器
+                setupInputObserver();
+                setupResizeObserver();
+                
+                // 按钮事件
+                addCircleBtn.addEventListener('click', addCCircle);
+                addQCircleBtn.addEventListener('click', addQCircle);
+                reverseBtn.addEventListener('click', reverseConnectionOrder);
+                rotateBtn.addEventListener('click', applyRotation);
+                
+                // 切换增量编程按钮事件
+                switchModeBtn.addEventListener('click', () => {
+                    let hasIncremental = false;
+                    let hasAbsolute = false;
+                    
+                    for (const circle of cCircles) {
+                        if (circle.type === 'incremental') hasIncremental = true;
+                        if (circle.type === 'absolute') hasAbsolute = true;
+                    }
+                    
+                    if (hasAbsolute || (!hasIncremental && !hasAbsolute)) {
+                        // 切换到增量编程
+                        for (let i = 0; i < cCircles.length; i++) {
+                            if (i > 0) {
+                                cCircles[i].type = 'incremental';
+                                cCircles[i].baseCircleId = i;
+                            }
+                        }
+                        switchModeBtn.innerHTML = '🔄 切换所有为绝对编程';
+                    } else {
+                        // 切换到绝对编程
+                        for (const circle of cCircles) {
+                            circle.type = 'absolute';
+                            circle.baseCircleId = null;
+                        }
+                        switchModeBtn.innerHTML = '🔄 切换所有为增量编程';
+                    }
+                    
+                    renderCCircleList();
+                    updateAll();
+                });
+                
+                // 重置按钮事件
+                resetBtn.addEventListener('click', () => {
+                    // 清空所有输入框
+                    r1XInput.value = '';
+                    r1YInput.value = '';
+                    r2XInput.value = '';
+                    r2YInput.value = '';
+                    bigCircleDiameterInput.value = '';
+                    smallCircleDiameterInput.value = '';
+                    parallelDiameterInput.value = '';
+                    smallCircleDiameter2Input.value = '';
+                    qCircleDiameterInput.value = '';
+                    defaultQCircleXInput.value = '';
+                    defaultQCircleYInput.value = '';
+                    startXInput.value = '';
+                    startYInput.value = '';
+                    originXInput.value = '';
+                    originYInput.value = '';
+                    cuttingDepthInput.value = '';
+                    feedRateInput.value = '';
+                    
+                    // 重置C槽
+                    cCircles = [
+                        { 
+                            id: 1, 
+                            moveDistance: 6.3, 
+                            offsetDistance: 3.2, 
+                            name: 'C1',
+                            type: 'absolute',
+                            baseCircleId: null
+                        },
+                        { 
+                            id: 2, 
+                            moveDistance: 2.2,
+                            offsetDistance: -0.9,
+                            name: 'C2',
+                            type: 'incremental',
+                            baseCircleId: 1
+                        }
+                    ];
+                    nextCircleId = 3;
+                    renderCCircleList();
+                    
+                    // 重置Q槽
+                    qCircles = [];
+                    nextQCircleId = 1;
+                    renderQCircleList();
+                    
+                    // 重置反转状态
+                    reverseOrder = false;
+                    reverseBtn.innerHTML = '🔄 反转加工顺序';
+                    reverseBtn.classList.remove('active');
+                    
+                    // 重置图形旋转
+                    graphRotation = 0;
+                    rotationAngleSelect.value = '0';
+                    customAngleGroup.style.display = 'none';
+                    customAngleValue.value = '0';
+                    
+                    // 重置按钮文本
+                    switchModeBtn.innerHTML = '🔄 切换所有为增量编程';
+                    
+                    // 重置参数为默认值
+                    params = {...defaultParams};
+                    
+                    // 更新显示并重绘
+                    updateDataDisplay();
+                    
+                    setTimeout(() => {
+                        draw();
+                    }, 100);
+                });
+                
+                // 删除按钮事件（事件委托）
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-circle-btn')) {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        removeCCircle(id);
+                    }
+                    if (e.target.classList.contains('remove-q-circle-btn')) {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        removeQCircle(id);
+                    }
+                });
+                
+                // 程序切换事件
+                programTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabId = tab.getAttribute('data-tab');
+                        switchProgram(tabId);
+                    });
+                });
+                
+                // 导出功能事件
+                exportProgramBtn.addEventListener('click', exportFile);
+                cancelExportBtn.addEventListener('click', () => {
+                    exportModal.classList.remove('active');
+                });
+                confirmExportBtn.addEventListener('click', executeExport);
+                
+                // 点击模态框外部关闭
+                exportModal.addEventListener('click', (e) => {
+                    if (e.target === exportModal) {
+                        exportModal.classList.remove('active');
+                    }
+                });
+                
+                // 按回车键确认导出
+                fileNameInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        executeExport();
+                    }
+                });
+                
+                // 初始显示和绘制
+                updateDataDisplay();
+                
+                // 延迟绘制以确保画布尺寸已确定
+                setTimeout(() => {
+                    resizeCanvas();
+                    draw();
+                }, 200);
+                
+                isInitialized = true;
+            }
+            
+            // 处理移动端旋转
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    resizeCanvas();
+                    
+                    setTimeout(() => {
+                        if (!isDrawing) {
+                            draw();
+                        }
+                    }, 300);
+                }, 500);
+            });
+            
+            // 页面加载时初始化
+            window.addEventListener('load', init);
+            
+            // DOMContentLoaded时也尝试初始化
+            document.addEventListener('DOMContentLoaded', function() {
+                if (!isInitialized) {
+                    setTimeout(init, 100);
+                }
+            });
+        </script>
+    </body>
+</html>
