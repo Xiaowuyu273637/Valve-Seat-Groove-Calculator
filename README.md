@@ -143,4 +143,152 @@
 
 ---
 
+
 **使用提示**：在实际加工前，请务必在仿真软件中验证生成的程序，确保加工安全。
+---
+# Valve Seat Groove Calculator
+
+## Project Introduction
+
+The Valve Seat Groove Calculator is a web-based CNC (Computer Numerical Control) machining program generation tool, specifically designed for calculating and generating machining programs for valve seat grooves. The tool provides an intuitive graphical interface, allowing users to automatically generate corresponding CNC machining programs through parametric settings.
+
+## Main Features
+
+### 1. Graphical Layout Design
+- Real-time display of the valve seat groove layout diagram
+- Supports drawing of geometric elements such as large circle (R1), small circle (R2), parallel grooves, C-grooves, Q-grooves, etc.
+- Adaptive zoom and center-aligned display
+- Supports dark/light theme switching
+
+### 2. Parametric Configuration
+- **Main Circle Parameters**: Coordinates and diameters of R1, R2
+- **Parallel Groove Parameters**: Groove spacing (automatically calculates half)
+- **C-Groove Parameters**: Diameter and position configuration
+- **Q-Groove Parameters**: Optional Q-groove diameter and offset
+- **Machining Parameters**: Cutting depth, feed rate
+- **Coordinate Parameters**: Start point coordinates, rotation center coordinates
+
+### 3. Incremental Programming Support
+- Supports absolute and incremental programming modes
+- Smart incremental programming: Subsequent C-grooves can be calculated incrementally based on the previous groove
+- One-click switching of all C-grooves to incremental/absolute programming
+
+### 4. Graphic Rotation Function
+- Supports preset rotation angles: 0°, 90°, 180°, 270°
+- Supports custom rotation angles
+- Start point coordinates remain fixed and do not rotate
+
+### 5. CNC Program Generation
+- Automatically generates CNC programs in diameter programming format
+- Supports two program formats ($1 and $1+$2)
+- Real-time preview of program code
+- Supports exporting programs as text files
+
+### 6. Data Visualization
+- Tabular display of rotation machining data
+- Summary of reference information
+- Connection line data and angle calculation
+
+## Technical Features
+
+### Frontend Technology
+- Pure HTML/CSS/JavaScript implementation, no backend dependencies
+- Responsive design, supports desktop and mobile
+- Canvas 2D drawing, high-performance graphics rendering
+- CSS Grid and Flexbox layout
+- Dark mode support (follows system theme)
+
+### Interactive Features
+- Real-time parameter updates and graphic redrawing
+- Drag-to-zoom and view adjustment (via canvas interaction)
+- Loading status prompts
+- Modal dialogs and form validation
+
+### Data Management
+- Parameter local storage (via URL parameters or local storage)
+- Incremental programming data model
+- Rotation calculations and geometric transformations
+
+## Usage Instructions
+
+### Quick Start
+1. Open the `index.html` file or deploy to a web server
+2. Enter or adjust parameters in the left control panel
+3. The graphic area will update in real-time to display the layout
+4. View the generated CNC program code at the bottom
+5. Click the "Export" button to save the program file
+
+### Parameter Configuration Notes
+- **R1 Coordinates**: Position of the large circle's center
+- **R2 Coordinates**: Position of the small circle's center
+- **Groove Spacing**: Distance between parallel grooves
+- **C-Groove**: Circular groove, multiple can be added, supports incremental programming
+- **Q-Groove**: Additional circular groove, can be freely added
+- **Start Point Coordinates**: Machining start position (does not participate in graphic rotation)
+- **Rotation Center**: Machining rotation center point
+
+### Programming Modes
+- **Absolute Programming**: Based on the absolute position relative to the R1 circle
+- **Incremental Programming**: Based on the relative position to the previous groove
+- Click "Switch All to Incremental Programming" to batch modify modes
+
+### Graphic Rotation
+- Select a preset angle or a custom angle
+- Click "Apply Rotation" to take effect
+- Note: Start point coordinates remain fixed, other elements rotate around the rotation center
+
+### Program Export
+1. Select the desired program version to export (first set or second set)
+2. Click the "Export" button
+3. Enter the filename (name input includes .TXT format by default)
+4. Confirm to automatically download the file
+
+## Development Information
+
+### Developer
+- **Main Developer**: Yu (Fish)
+- **AI Collaboration**: DeepSeek
+- **Development Date**: February 2026
+
+### Technology Stack
+- Native JavaScript (ES6+)
+- HTML5 Canvas API
+- CSS3 (Grid, Flexbox, CSS Variables)
+- Responsive Web Design
+- Modern Browser APIs (ResizeObserver, etc.)
+
+### Project Highlights
+1. **No Dependencies**: Does not rely on any external libraries or frameworks
+2. **Offline Use**: All functions run locally in the browser
+3. **Cross-Platform**: Supports desktop and mobile devices
+4. **Easy Deployment**: Runs with a single HTML file
+
+## Important Notes
+
+1. **Unit System**: All dimensional units are millimeters (mm), angle units are degrees (°)
+2. **Coordinate System**: Y-axis is positive upward, conforming to machining conventions
+3. **Program Format**: Generates CNC programs in diameter programming format
+4. **Precision**: Calculation precision is to two decimal places
+5. **Performance**: There may be a brief loading state during graphic redrawing
+
+## Update Log
+
+### v1.0 (2026-02-10)
+- Initial version release
+- Basic parameter settings and graphic drawing
+- CNC program generation and export functionality
+- Incremental programming support
+- Graphic rotation function
+- Responsive design
+
+## Contribution Guidelines
+
+Issues and Pull Requests to improve this project are welcome.
+
+## License
+
+This project follows the MIT License. Please see the LICENSE file for details (if present).
+
+---
+
+**Usage Tip**: Before actual machining, always verify the generated program in simulation software to ensure machining safety.
