@@ -292,3 +292,4 @@ This project follows the MIT License. Please see the LICENSE file for details (i
 ---
 
 **Usage Tip**: Before actual machining, always verify the generated program in simulation software to ensure machining safety.
+---
