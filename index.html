@@ -175,7 +175,6 @@
                 font-size: 14px !important;
             }
             
-            /* 手机端优化输入框 */
             input[type="number"] {
                 font-size: 16px !important;
             }
@@ -221,7 +220,6 @@
             }
         }
         
-        /* 横屏优化 */
         @media (orientation: landscape) and (max-width: 768px) {
             .container {
                 grid-template-columns: 300px 1fr;
@@ -776,14 +774,12 @@
             cursor: pointer;
         }
         
-        /* 新添加：内容区域滚动 */
         .data-section {
             margin-top: 20px;
             border-top: 1px solid var(--border-color);
             padding-top: 15px;
         }
         
-        /* 新添加：连接线数据表格容器 */
         .table-container {
             max-height: 300px;
             overflow-y: auto;
@@ -792,7 +788,6 @@
             border-radius: 8px;
         }
         
-        /* iOS Safari specific fixes */
         @supports (-webkit-touch-callout: none) {
             input[type="number"] {
                 font-size: 16px !important;
@@ -808,7 +803,6 @@
             }
         }
         
-        /* 新增：开发者信息样式 */
         .developer-info {
             margin-top: 20px;
             padding-top: 15px;
@@ -1094,6 +1088,14 @@
                             共同开发<br>
                             用于阀座槽加工计算与CNC程序生成
                         </p>
+                        <p style="margin-top: 10px;">
+                            <a href="https://github.com/Xiaowuyu273637/Valve-Seat-Groove-Calculator" 
+                               target="_blank" 
+                               rel="noopener noreferrer"
+                               style="color: #3498db; text-decoration: none;">
+                                🌟 GitHub仓库: Valve-Seat-Groove-Calculator
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -1262,8 +1264,8 @@
             let reverseOrder = false;
             let connectionOrder = [];
             
-            // 新增：图形旋转角度
-            let graphRotation = 0; // 角度，0表示不旋转
+            // 图形旋转角度
+            let graphRotation = 0;
             
             // 观察器实例
             let inputObserver = null;
@@ -1291,7 +1293,7 @@
                 return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
             }
             
-            // 计算旋转角度（从旋转中心到起点的连线，与从旋转中心到目标点的连线之间的夹角）
+            // 计算旋转角度（顺时针为正数，逆时针为负数）
             function calculateRotationAngle(centerX, centerY, startX, startY, targetX, targetY) {
                 const startVecX = startX - centerX;
                 const startVecY = startY - centerY;
@@ -1310,7 +1312,10 @@
                     rotationAngle += 360;
                 }
                 
-                let direction = rotationAngle >= 0 ? '逆时针' : '顺时针';
+                // 修正：顺时针为正数，逆时针为负数（根据最近原则）
+                rotationAngle = -rotationAngle;
+                
+                let direction = rotationAngle >= 0 ? '顺时针' : '逆时针';
                 const radius = calculateDistance(centerX, centerY, targetX, targetY);
                 
                 return {
@@ -1337,15 +1342,12 @@
                 const cosAngle = Math.cos(angleRad);
                 const sinAngle = Math.sin(angleRad);
                 
-                // 将点平移到原点
                 const translatedX = pointX - originX;
                 const translatedY = pointY - originY;
                 
-                // 旋转
                 const rotatedX = translatedX * cosAngle - translatedY * sinAngle;
                 const rotatedY = translatedX * sinAngle + translatedY * cosAngle;
                 
-                // 平移回原位置
                 return {
                     x: rotatedX + originX,
                     y: rotatedY + originY
@@ -1360,11 +1362,9 @@
                 // 图形旋转：只旋转R1、R2和中心线，不旋转起点
                 let rotatedR1X = r1X, rotatedR1Y = r1Y;
                 let rotatedR2X = r2X, rotatedR2Y = r2Y;
-                // 起点不旋转，保持原始位置
                 let rotatedStartX = startX, rotatedStartY = startY;
                 
                 if (graphRotation !== 0) {
-                    // 旋转R1和R2
                     const rotatedR1 = rotatePointAroundOrigin(r1X, r1Y, originX, originY, graphRotation);
                     rotatedR1X = rotatedR1.x;
                     rotatedR1Y = rotatedR1.y;
@@ -1372,7 +1372,6 @@
                     const rotatedR2 = rotatePointAroundOrigin(r2X, r2Y, originX, originY, graphRotation);
                     rotatedR2X = rotatedR2.x;
                     rotatedR2Y = rotatedR2.y;
-                    // 起点不旋转
                 }
                 
                 const dx = rotatedR2X - rotatedR1X;
@@ -1388,21 +1387,18 @@
                 const vx = -uy;
                 const vy = ux;
                 
-                // 计算从旋转中心到起点的旋转角度（使用旋转后的起点坐标）
                 const centerLineRotation = calculateRotationAngle(originX, originY, rotatedStartX, rotatedStartY, rotatedR2X, rotatedR2Y);
                 
                 const circles = {};
                 const allCircles = [];
                 const circleOrder = [];
                 
-                // 先计算所有槽的绝对位置
                 const absolutePositions = [];
                 
                 for (const cCircle of cCircles) {
                     let absoluteMoveDistance = cCircle.moveDistance;
                     let absoluteOffsetDistance = cCircle.offsetDistance;
                     
-                    // 如果是增量编程，需要计算绝对位置
                     if (cCircle.type === 'incremental' && cCircle.baseCircleId) {
                         const baseCircle = cCircles.find(c => c.id === cCircle.baseCircleId);
                         if (baseCircle) {
@@ -1414,14 +1410,12 @@
                         }
                     }
                     
-                    // 保存绝对位置
                     absolutePositions.push({
                         id: cCircle.id,
                         moveDist: absoluteMoveDistance,
                         offsetDist: absoluteOffsetDistance
                     });
                     
-                    // 创建下排槽（负偏移） - 使用旋转后的R1坐标
                     const circleDown = {
                         x: rotatedR1X + absoluteMoveDistance * ux - absoluteOffsetDistance * vx,
                         y: rotatedR1Y + absoluteMoveDistance * uy - absoluteOffsetDistance * vy,
@@ -1431,7 +1425,7 @@
                         name: `${cCircle.name}-下`,
                         id: cCircle.id,
                         category: 'C',
-                        orderIndex: (cCircle.id - 1) * 2, // 下排在前面
+                        orderIndex: (cCircle.id - 1) * 2,
                         originalMove: cCircle.moveDistance,
                         originalOffset: cCircle.offsetDistance,
                         positionType: cCircle.type,
@@ -1439,7 +1433,6 @@
                         isUpper: false
                     };
                     
-                    // 创建上排槽（正偏移） - 使用旋转后的R1坐标
                     const circleUp = {
                         x: rotatedR1X + absoluteMoveDistance * ux + absoluteOffsetDistance * vx,
                         y: rotatedR1Y + absoluteMoveDistance * uy + absoluteOffsetDistance * vy,
@@ -1449,7 +1442,7 @@
                         name: `${cCircle.name}-上`,
                         id: cCircle.id,
                         category: 'C',
-                        orderIndex: (cCircle.id - 1) * 2 + 1, // 上排在后面
+                        orderIndex: (cCircle.id - 1) * 2 + 1,
                         originalMove: cCircle.moveDistance,
                         originalOffset: cCircle.offsetDistance,
                         positionType: cCircle.type,
@@ -1460,12 +1453,11 @@
                     circles[`circle${cCircle.id}Down`] = circleDown;
                     circles[`circle${cCircle.id}Up`] = circleUp;
                     
-                    // 先添加下排，再添加上排
                     circleOrder.push(circleDown, circleUp);
                     allCircles.push(circleDown, circleUp);
                 }
                 
-                // 添加Q槽 - 使用旋转后的R1坐标
+                // 添加Q槽
                 for (const qCircle of qCircles) {
                     const qCircleObj = {
                         x: rotatedR1X + qCircle.xOffset,
@@ -1484,7 +1476,7 @@
                     allCircles.push(qCircleObj);
                 }
                 
-                // 计算每个槽的旋转角度和距离（从旋转中心到C点的距离）
+                // 计算每个槽的旋转角度和距离
                 for (const circle of allCircles) {
                     const rotation = calculateRotationAngle(originX, originY, rotatedStartX, rotatedStartY, circle.x, circle.y);
                     circle.rotationAngle = rotation.rotationAngle;
@@ -1492,19 +1484,17 @@
                     circle.direction = rotation.direction;
                     circle.startAngle = rotation.startAngle;
                     circle.targetAngle = rotation.targetAngle;
-                    circle.radius = rotation.radius; // 从旋转中心到C点的距离
+                    circle.radius = rotation.radius;
                     circle.distanceToStart = calculateDistance(rotatedStartX, rotatedStartY, circle.x, circle.y);
                 }
                 
                 // 固定加工顺序：C1下 → C2下 → C1上 → C2上 → Q槽
                 let sortedCircles = [...circleOrder];
                 
-                // 如果需要反转顺序
                 if (reverseOrder) {
                     sortedCircles = [...sortedCircles].reverse();
                 }
                 
-                // 保存连接顺序用于显示
                 connectionOrder = sortedCircles.map((circle, index) => ({
                     index: index + 1,
                     name: circle.name,
@@ -1514,7 +1504,7 @@
                     distanceToStart: circle.distanceToStart
                 }));
                 
-                // 计算连接线数据（从旋转中心到C点的连线）
+                // 计算连接线数据
                 const connectionLines = [];
                 for (let i = 0; i < sortedCircles.length; i++) {
                     const circle = sortedCircles[i];
@@ -1548,20 +1538,12 @@
             // 计算所有点的边界
             function calculateBounds() {
                 const geometry = calculateGeometry();
-                const { startX, startY, r1X, r1Y, r2X, r2Y, originX, originY } = params;
+                const { startX, startY, originX, originY } = params;
                 
-                // 使用旋转后的坐标计算边界
-                const rotatedR1X = geometry.rotatedR1X;
-                const rotatedR1Y = geometry.rotatedR1Y;
-                const rotatedR2X = geometry.rotatedR2X;
-                const rotatedR2Y = geometry.rotatedR2Y;
-                const rotatedStartX = geometry.rotatedStartX;
-                const rotatedStartY = geometry.rotatedStartY;
-                
-                let minX = Math.min(rotatedStartX, rotatedR1X, rotatedR2X, originX);
-                let maxX = Math.max(rotatedStartX, rotatedR1X, rotatedR2X, originX);
-                let minY = Math.min(rotatedStartY, rotatedR1Y, rotatedR2Y, originY);
-                let maxY = Math.max(rotatedStartY, rotatedR1Y, rotatedR2Y, originY);
+                let minX = Math.min(geometry.rotatedStartX, geometry.rotatedR1X, geometry.rotatedR2X, originX);
+                let maxX = Math.max(geometry.rotatedStartX, geometry.rotatedR1X, geometry.rotatedR2X, originX);
+                let minY = Math.min(geometry.rotatedStartY, geometry.rotatedR1Y, geometry.rotatedR2Y, originY);
+                let maxY = Math.max(geometry.rotatedStartY, geometry.rotatedR1Y, geometry.rotatedR2Y, originY);
                 
                 for (const circle of geometry.allCircles) {
                     const radius = circle.category === 'C' ? 
@@ -1659,7 +1641,7 @@
                         }
                         
                         const geometry = calculateGeometry();
-                        const { r1X, r1Y, r2X, r2Y, bigCircleDiameter, smallCircleDiameter, smallCircleDiameter2, startX, startY, originX, originY, qCircleDiameter } = params;
+                        const { bigCircleDiameter, smallCircleDiameter, smallCircleDiameter2, originX, originY, qCircleDiameter } = params;
                         const parallelDistance = geometry.parallelDistance;
                         
                         const canvasWidth = canvas.width;
@@ -1719,10 +1701,10 @@
                         // 绘制小圆 R2
                         drawCircle(geometry.rotatedR2X, geometry.rotatedR2Y, smallCircleDiameter/2, '#4dabf7', false, true, 2 / currentScale);
                         
-                        // 绘制起点（使用原始起点坐标）
+                        // 绘制起点
                         drawCircle(geometry.rotatedStartX, geometry.rotatedStartY, 3 / currentScale, '#2c3e50', true, false);
                         
-                        // 绘制所有C槽和Q槽以及它们的连接线（用实线连接C槽-旋转中心-起点）
+                        // 绘制所有C槽和Q槽以及它们的连接线
                         const circleColors = ['#7950f2', '#e64980', '#2ecc71', '#f39c12', '#1abc9c', '#9b59b6', '#34495e', '#e74c3c', '#3498db', '#2ecc71'];
                         
                         for (let i = 0; i < geometry.allCircles.length; i++) {
@@ -1735,7 +1717,6 @@
                                 circleColors[circle.id % circleColors.length] : 
                                 '#ff9800';
                             
-                            // 用实线连接C槽-旋转中心-起点
                             drawLine(originX, originY, circle.x, circle.y, 'rgba(0, 0, 0, 0.5)', 1 / currentScale);
                             drawCircle(circle.x, circle.y, radius, color, false, true, 
                                 (circle.category === 'C' ? 1.5 : 2) / currentScale);
@@ -1748,7 +1729,7 @@
                         
                         ctx.restore();
                         
-                        // 绘制文字标注（显示增量信息）
+                        // 绘制文字标注
                         drawLabels(displayWidth, displayHeight, geometry);
                         
                         // 更新状态栏
@@ -1763,7 +1744,7 @@
                 });
             }
             
-            // 绘制标签（显示增量信息）
+            // 绘制标签
             function drawLabels(displayWidth, displayHeight, geometry) {
                 const dpr = window.devicePixelRatio || 1;
                 
@@ -1811,7 +1792,6 @@
                     ctx.fillStyle = color;
                     ctx.font = `bold ${Math.max(10, 12)}px Arial`;
                     
-                    // 显示槽信息
                     let labelText = circle.name;
                     if (circle.category === 'C') {
                         if (circle.positionType === 'incremental') {
@@ -1891,7 +1871,6 @@
                 
                 const rotationRadiusValue = calculateDistance(originX, originY, startX, startY);
                 
-                // 显示原始坐标（用户输入的坐标）
                 originCoord.textContent = `(${roundToTwoDecimals(originX).toFixed(2)}, ${roundToTwoDecimals(originY).toFixed(2)})`;
                 startCoord.textContent = `(${roundToTwoDecimals(startX).toFixed(2)}, ${roundToTwoDecimals(startY).toFixed(2)})`;
                 r1Coord.textContent = `(${roundToTwoDecimals(r1X).toFixed(2)}, ${roundToTwoDecimals(r1Y).toFixed(2)})`;
@@ -1904,7 +1883,6 @@
                 circleCount.textContent = cCircles.length;
                 qCircleCountDisplay.textContent = qCircles.length;
                 
-                // 显示图形旋转信息
                 let rotationDisplayText = `${graphRotation}°`;
                 if (graphRotation !== 0) {
                     rotationDisplayText += ` (已旋转)`;
@@ -1937,7 +1915,7 @@
                 generateCNCPrograms();
             }
             
-            // 生成CNC加工程序 - 直径编程，考虑图形旋转（起点不旋转）
+            // 生成CNC加工程序 - 直径编程，考虑图形旋转（起点不旋转），X值符号根据起点Y值决定
             function generateCNCPrograms() {
                 const geometry = calculateGeometry();
                 const cuttingDepth = parseFloat(cuttingDepthInput.value) || 0;
@@ -1949,9 +1927,13 @@
                     return;
                 }
                 
+                // 获取起点Y值，判断X值符号
+                // Y值为正时，X值为负数；Y值为负时，X值为正数
+                const xSign = params.startY >= 0 ? -1 : 1;
+                
                 // 获取下排和上排的C槽
-                const cCircleDown = []; // 下排C槽
-                const cCircleUp = [];   // 上排C槽
+                const cCircleDown = [];
+                const cCircleUp = [];
                 
                 for (const circle of geometry.allCircles) {
                     if (circle.category === 'C') {
@@ -1963,13 +1945,11 @@
                     }
                 }
                 
-                // 按ID排序
                 cCircleDown.sort((a, b) => a.id - b.id);
                 cCircleUp.sort((a, b) => a.id - b.id);
                 
                 const roundedCuttingDepth = roundToTwoDecimals(cuttingDepth);
                 
-                // 基础程序部分
                 let baseProgram = `$1
 T0
 G98
@@ -1977,27 +1957,23 @@ G00Z50.0`;
                 
                 // 处理下排C槽
                 if (cCircleDown.length > 0) {
-                    // C1下：绝对坐标 XC 格式（直径编程）
                     const c1Down = cCircleDown.find(c => c.id === 1);
                     if (c1Down) {
-                        // 直径编程：X轴值是直径值，需要将半径乘以2
-                        // 起点不旋转，C槽旋转，计算角度时使用原始起点
                         const diameterValue = roundToTwoDecimals(c1Down.radius * 2);
+                        const signedDiameter = diameterValue * xSign;
                         
                         baseProgram += `
-X${diameterValue.toFixed(2)}C${roundToTwoDecimals(c1Down.rotationAngle).toFixed(2)}
+X${signedDiameter.toFixed(2)}C${roundToTwoDecimals(c1Down.rotationAngle).toFixed(2)}
 Z2.0
 G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
 G04X0.3
 G0Z2.0`;
                     }
                     
-                    // C2下：增量坐标 UH 格式（相对于C1下，直径编程）
                     if (cCircleDown.length > 1) {
                         const c2Down = cCircleDown.find(c => c.id === 2);
                         const c1DownRef = cCircleDown.find(c => c.id === 1);
                         if (c2Down && c1DownRef) {
-                            // 直径编程：U轴值是直径增量，需要将半径差乘以2
                             const deltaRadius = roundToTwoDecimals((c2Down.radius - c1DownRef.radius) * 2);
                             const deltaAngle = roundToTwoDecimals(c2Down.rotationAngle - c1DownRef.rotationAngle);
                             
@@ -2013,26 +1989,23 @@ G0Z2.0`;
                 
                 // 处理上排C槽
                 if (cCircleUp.length > 0) {
-                    // C1上：绝对坐标 XC 格式（直径编程）
                     const c1Up = cCircleUp.find(c => c.id === 1);
                     if (c1Up) {
-                        // 直径编程：X轴值是直径值，需要将半径乘以2
                         const diameterValue = roundToTwoDecimals(c1Up.radius * 2);
+                        const signedDiameter = diameterValue * xSign;
                         
                         baseProgram += `
-X${diameterValue.toFixed(2)}C${roundToTwoDecimals(c1Up.rotationAngle).toFixed(2)}
+X${signedDiameter.toFixed(2)}C${roundToTwoDecimals(c1Up.rotationAngle).toFixed(2)}
 Z2.0
 G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
 G04X0.3
 G0Z2.0`;
                     }
                     
-                    // C2上：增量坐标 UH 格式（相对于C1上，直径编程）
                     if (cCircleUp.length > 1) {
                         const c2Up = cCircleUp.find(c => c.id === 2);
                         const c1UpRef = cCircleUp.find(c => c.id === 1);
                         if (c2Up && c1UpRef) {
-                            // 直径编程：U轴值是直径增量，需要将半径差乘以2
                             const deltaRadius = roundToTwoDecimals((c2Up.radius - c1UpRef.radius) * 2);
                             const deltaAngle = roundToTwoDecimals(c2Up.rotationAngle - c1UpRef.rotationAngle);
                             
@@ -2046,14 +2019,14 @@ G0Z2.0`;
                     }
                 }
                 
-                // 处理Q槽（如果有） - 使用绝对坐标，直径编程
+                // 处理Q槽 - 使用绝对坐标，直径编程
                 for (const circle of geometry.allCircles) {
                     if (circle.category === 'Q') {
-                        // 直径编程：X轴值是直径值，需要将半径乘以2
                         const diameterValue = roundToTwoDecimals(circle.radius * 2);
+                        const signedDiameter = diameterValue * xSign;
                         
                         baseProgram += `
-X${diameterValue.toFixed(2)}C${roundToTwoDecimals(circle.rotationAngle).toFixed(2)}
+X${signedDiameter.toFixed(2)}C${roundToTwoDecimals(circle.rotationAngle).toFixed(2)}
 Z2.0
 G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
 G04X0.3
@@ -2064,10 +2037,7 @@ G0Z2.0`;
                 baseProgram += `
 G0Z50.0`;
                 
-                // 第一套程序：只生成 $1 部分
                 const program1 = baseProgram;
-                
-                // 第二套程序：生成 $1 和 $2 部分
                 const program2 = baseProgram + `
 $2`;
                 
@@ -2088,13 +2058,8 @@ $2`;
                 
                 graphRotation = angle;
                 
-                // 更新状态栏
                 updateStatusBar();
-                
-                // 更新数据显示
                 updateDataDisplay();
-                
-                // 重绘画布
                 draw();
             }
             
@@ -2115,7 +2080,7 @@ $2`;
                 statusBar.textContent = `缩放: ${zoomPercent}% | 坐标系: Y轴向上为正${rotationText}${reverseOrder ? ' | 加工顺序已反转' : ''}`;
             }
             
-            // 渲染C槽列表 - 支持增量编程
+            // 渲染C槽列表
             function renderCCircleList() {
                 cCircleList.innerHTML = '';
                 
@@ -2123,16 +2088,13 @@ $2`;
                     const item = document.createElement('div');
                     item.className = 'c-circle-item';
                     
-                    // 构建位置类型选项
                     let positionTypeOptions = '';
                     if (cCircle.id === 1) {
-                        // 第一个槽只能是绝对位置
                         positionTypeOptions = `
                             <option value="absolute" selected>绝对位置</option>
                             <option value="incremental" disabled>增量位置（不可选）</option>
                         `;
                     } else {
-                        // 其他槽可以选择绝对或增量
                         const isAbsolute = cCircle.type === 'absolute';
                         const isIncremental = cCircle.type === 'incremental';
                         
@@ -2142,7 +2104,6 @@ $2`;
                         `;
                     }
                     
-                    // 构建基础槽选择选项
                     let baseCircleOptions = '<option value="">-- 选择参考槽 --</option>';
                     for (const baseCircle of cCircles) {
                         if (baseCircle.id < cCircle.id) {
@@ -2150,7 +2111,6 @@ $2`;
                         }
                     }
                     
-                    // 是否显示基础槽选择（只有增量编程时才显示）
                     const baseCircleDisplay = cCircle.type === 'incremental' ? 'block' : 'none';
                     
                     item.innerHTML = `
@@ -2222,12 +2182,10 @@ $2`;
                 }
             }
             
-            // 添加C槽 - 智能增量编程
+            // 添加C槽
             function addCCircle() {
-                // 获取最后一个C槽
                 const lastCircle = cCircles.length > 0 ? cCircles[cCircles.length - 1] : null;
                 
-                // 默认使用增量编程，基于最后一个槽
                 const newCircle = {
                     id: nextCircleId++,
                     moveDistance: 2.0,
@@ -2321,7 +2279,7 @@ $2`;
                 params.feedRate = parseFloat(feedRateInput.value) || 0;
             }
             
-            // 更新C槽参数 - 支持增量编程
+            // 更新C槽参数
             function updateCCircleParams() {
                 for (const cCircle of cCircles) {
                     const moveInput = document.getElementById(`moveDistance${cCircle.id}`);
@@ -2335,11 +2293,9 @@ $2`;
                     if (baseCircleSelect && baseCircleSelect.value) {
                         cCircle.baseCircleId = parseInt(baseCircleSelect.value);
                     } else if (cCircle.type === 'incremental' && cCircle.id > 1) {
-                        // 如果没有选择参考槽，默认基于前一个槽
                         cCircle.baseCircleId = cCircles.find(c => c.id === cCircle.id - 1)?.id || null;
                     }
                     
-                    // 更新帮助文本和基础槽选择显示
                     const moveHelp = document.getElementById(`moveDistanceHelp${cCircle.id}`);
                     const offsetHelp = document.getElementById(`offsetDistanceHelp${cCircle.id}`);
                     const baseCircleRow = document.getElementById(`baseCircleRow${cCircle.id}`);
@@ -2389,7 +2345,6 @@ $2`;
                     cuttingDepthInput, feedRateInput
                 ];
                 
-                // 为所有输入框添加事件监听
                 inputElements.forEach(input => {
                     input.addEventListener('input', () => {
                         loadingOverlay.classList.add('active');
@@ -2399,7 +2354,6 @@ $2`;
                     });
                 });
                 
-                // 为C槽和Q槽输入框添加事件监听
                 document.addEventListener('input', (e) => {
                     if (e.target.classList.contains('circle-input') || 
                         e.target.classList.contains('q-circle-input')) {
@@ -2410,7 +2364,6 @@ $2`;
                     }
                 });
                 
-                // 为位置类型和基础槽选择添加事件监听
                 document.addEventListener('change', (e) => {
                     if (e.target.classList.contains('position-type-input') || 
                         e.target.classList.contains('base-circle-input')) {
@@ -2422,7 +2375,6 @@ $2`;
                     }
                 });
                 
-                // 平行槽直径特殊处理
                 parallelDiameterInput.addEventListener('input', () => {
                     const value = parseFloat(parallelDiameterInput.value) || 0;
                     const half = calculateHalfParallel(value);
@@ -2434,7 +2386,6 @@ $2`;
                     }, 100);
                 });
                 
-                // 旋转角度选择变化
                 rotationAngleSelect.addEventListener('change', () => {
                     if (rotationAngleSelect.value === 'custom') {
                         customAngleGroup.style.display = 'block';
@@ -2534,7 +2485,6 @@ $2`;
             
             // 初始化函数
             function init() {
-                // 设置默认值
                 r1XInput.value = roundToTwoDecimals(params.r1X).toFixed(2);
                 r1YInput.value = roundToTwoDecimals(params.r1Y).toFixed(2);
                 r2XInput.value = roundToTwoDecimals(params.r2X).toFixed(2);
@@ -2553,21 +2503,17 @@ $2`;
                 cuttingDepthInput.value = roundToTwoDecimals(params.cuttingDepth).toFixed(2);
                 feedRateInput.value = params.feedRate.toFixed(0);
                 
-                // 渲染C槽和Q槽列表
                 renderCCircleList();
                 renderQCircleList();
                 
-                // 设置观察器
                 setupInputObserver();
                 setupResizeObserver();
                 
-                // 按钮事件
                 addCircleBtn.addEventListener('click', addCCircle);
                 addQCircleBtn.addEventListener('click', addQCircle);
                 reverseBtn.addEventListener('click', reverseConnectionOrder);
                 rotateBtn.addEventListener('click', applyRotation);
                 
-                // 切换增量编程按钮事件
                 switchModeBtn.addEventListener('click', () => {
                     let hasIncremental = false;
                     let hasAbsolute = false;
@@ -2578,7 +2524,6 @@ $2`;
                     }
                     
                     if (hasAbsolute || (!hasIncremental && !hasAbsolute)) {
-                        // 切换到增量编程
                         for (let i = 0; i < cCircles.length; i++) {
                             if (i > 0) {
                                 cCircles[i].type = 'incremental';
@@ -2587,7 +2532,6 @@ $2`;
                         }
                         switchModeBtn.innerHTML = '🔄 切换所有为绝对编程';
                     } else {
-                        // 切换到绝对编程
                         for (const circle of cCircles) {
                             circle.type = 'absolute';
                             circle.baseCircleId = null;
@@ -2599,9 +2543,7 @@ $2`;
                     updateAll();
                 });
                 
-                // 重置按钮事件
                 resetBtn.addEventListener('click', () => {
-                    // 清空所有输入框
                     r1XInput.value = '';
                     r1YInput.value = '';
                     r2XInput.value = '';
@@ -2620,7 +2562,6 @@ $2`;
                     cuttingDepthInput.value = '';
                     feedRateInput.value = '';
                     
-                    // 重置C槽
                     cCircles = [
                         { 
                             id: 1, 
@@ -2642,29 +2583,23 @@ $2`;
                     nextCircleId = 3;
                     renderCCircleList();
                     
-                    // 重置Q槽
                     qCircles = [];
                     nextQCircleId = 1;
                     renderQCircleList();
                     
-                    // 重置反转状态
                     reverseOrder = false;
                     reverseBtn.innerHTML = '🔄 反转加工顺序';
                     reverseBtn.classList.remove('active');
                     
-                    // 重置图形旋转
                     graphRotation = 0;
                     rotationAngleSelect.value = '0';
                     customAngleGroup.style.display = 'none';
                     customAngleValue.value = '0';
                     
-                    // 重置按钮文本
                     switchModeBtn.innerHTML = '🔄 切换所有为增量编程';
                     
-                    // 重置参数为默认值
                     params = {...defaultParams};
                     
-                    // 更新显示并重绘
                     updateDataDisplay();
                     
                     setTimeout(() => {
@@ -2672,7 +2607,6 @@ $2`;
                     }, 100);
                 });
                 
-                // 删除按钮事件（事件委托）
                 document.addEventListener('click', (e) => {
                     if (e.target.classList.contains('remove-circle-btn')) {
                         const id = parseInt(e.target.getAttribute('data-id'));
@@ -2684,7 +2618,6 @@ $2`;
                     }
                 });
                 
-                // 程序切换事件
                 programTabs.forEach(tab => {
                     tab.addEventListener('click', () => {
                         const tabId = tab.getAttribute('data-tab');
@@ -2692,31 +2625,26 @@ $2`;
                     });
                 });
                 
-                // 导出功能事件
                 exportProgramBtn.addEventListener('click', exportFile);
                 cancelExportBtn.addEventListener('click', () => {
                     exportModal.classList.remove('active');
                 });
                 confirmExportBtn.addEventListener('click', executeExport);
                 
-                // 点击模态框外部关闭
                 exportModal.addEventListener('click', (e) => {
                     if (e.target === exportModal) {
                         exportModal.classList.remove('active');
                     }
                 });
                 
-                // 按回车键确认导出
                 fileNameInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         executeExport();
                     }
                 });
                 
-                // 初始显示和绘制
                 updateDataDisplay();
                 
-                // 延迟绘制以确保画布尺寸已确定
                 setTimeout(() => {
                     resizeCanvas();
                     draw();
@@ -2725,7 +2653,6 @@ $2`;
                 isInitialized = true;
             }
             
-            // 处理移动端旋转
             window.addEventListener('orientationchange', () => {
                 setTimeout(() => {
                     resizeCanvas();
@@ -2738,10 +2665,8 @@ $2`;
                 }, 500);
             });
             
-            // 页面加载时初始化
             window.addEventListener('load', init);
             
-            // DOMContentLoaded时也尝试初始化
             document.addEventListener('DOMContentLoaded', function() {
                 if (!isInitialized) {
                     setTimeout(init, 100);
