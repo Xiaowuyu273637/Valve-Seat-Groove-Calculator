@@ -66,6 +66,12 @@
             .coordinate {
                 background: rgba(40, 40, 60, 0.7) !important;
             }
+            
+            .mode-select {
+                background: #2a2a3e !important;
+                border-color: #3a3a5e !important;
+                color: #e0e0e0 !important;
+            }
         }
         
         * {
@@ -298,7 +304,8 @@
         }
         
         input[type="number"],
-        select {
+        select,
+        .mode-select {
             padding: 10px 15px;
             border: 2px solid var(--border-color);
             border-radius: 8px;
@@ -309,6 +316,7 @@
             color: var(--text-color);
             -webkit-appearance: none;
             -moz-appearance: none;
+            appearance: none;
         }
         
         input[type="number"]::-webkit-inner-spin-button,
@@ -318,10 +326,18 @@
         }
         
         input[type="number"]:focus,
-        select:focus {
+        select:focus,
+        .mode-select:focus {
             outline: none;
             border-color: #3498db;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .mode-select {
+            cursor: pointer;
+            font-weight: 600;
+            color: #3498db;
+            text-align: center;
         }
         
         button {
@@ -443,6 +459,13 @@
             margin-top: 5px;
             font-style: italic;
             line-height: 1.4;
+        }
+        
+        .mode-hint {
+            font-size: 12px;
+            color: #3498db;
+            margin-top: 3px;
+            font-weight: 600;
         }
         
         .connection-line {
@@ -830,11 +853,9 @@
 </head>
 <body>
     <div class="container">
-        <!-- 左侧控制面板（合并了参数设置和连接线数据） -->
         <div class="panel control-panel">
             <h2>⚙️ 阀座槽参数设置</h2>
             <div class="panel-content">
-                <!-- 参数设置部分 -->
                 <h3>主圆参数</h3>
                 <div class="input-row">
                     <div class="input-group">
@@ -865,1813 +886,1811 @@
                 
                 <div class="input-group">
                     <label for="smallCircleDiameter">小圆直径 (R2)：</label>
-                        <input type="number" id="smallCircleDiameter" value="8.4" step="0.1">
-                    </div>
-                    
-                    <h3>平行槽参数</h3>
+                    <input type="number" id="smallCircleDiameter" value="8.4" step="0.1">
+                </div>
+                
+                <h3>平行槽参数</h3>
+                <div class="input-group">
+                    <label for="parallelDiameter">槽间距：</label>
+                    <input type="number" id="parallelDiameter" value="7.1" step="0.1">
+                    <div class="info-text">自动计算一半：<span id="halfParallel">3.55</span></div>
+                </div>
+                
+                <h3>C槽参数</h3>
+                <div class="input-group">
+                    <label for="smallCircleDiameter2">槽直径：</label>
+                    <input type="number" id="smallCircleDiameter2" value="4" step="0.1">
+                </div>
+                
+                <h3>C槽列表</h3>
+                <div class="c-circle-list" id="cCircleList">
+                </div>
+                
+                <button class="add-circle-btn" id="addCircleBtn">+ 添加C槽</button>
+                <button class="incremental-btn" id="switchModeBtn" style="margin-top: 10px; width: 100%; padding: 10px;">
+                    🔄 切换所有为增量编程
+                </button>
+                
+                <h3>Q槽参数（可选）</h3>
+                <div class="q-circle-controls">
                     <div class="input-group">
-                        <label for="parallelDiameter">槽间距：</label>
-                        <input type="number" id="parallelDiameter" value="7.1" step="0.1">
-                        <div class="info-text">自动计算一半：<span id="halfParallel">3.55</span></div>
+                        <label for="qCircleDiameter">Q槽直径：</label>
+                        <input type="number" id="qCircleDiameter" value="5" step="0.1">
                     </div>
                     
-                    <h3>C槽参数</h3>
                     <div class="input-group">
-                        <label for="smallCircleDiameter2">槽直径：</label>
-                        <input type="number" id="smallCircleDiameter2" value="4" step="0.1">
+                        <label for="defaultQCircleX">X轴平移：</label>
+                        <input type="number" id="defaultQCircleX" value="3" step="0.1">
                     </div>
                     
-                    <h3>C槽列表</h3>
-                    <div class="c-circle-list" id="cCircleList">
-                        <!-- C槽将在这里动态添加 -->
+                    <div class="input-group">
+                        <label for="defaultQCircleY">Y轴偏移：</label>
+                        <input type="number" id="defaultQCircleY" value="0" step="0.1">
                     </div>
                     
-                    <button class="add-circle-btn" id="addCircleBtn">+ 添加C槽</button>
-                    <button class="incremental-btn" id="switchModeBtn" style="margin-top: 10px; width: 100%; padding: 10px;">
-                        🔄 切换所有为增量编程
+                    <button class="add-q-circle-btn" id="addQCircleBtn" style="margin-top: 10px; width: 100%;">
+                        + 添加Q槽
                     </button>
                     
-                    <h3>Q槽参数（可选）</h3>
-                    <div class="q-circle-controls">
-                        <div class="input-group">
-                            <label for="qCircleDiameter">Q槽直径：</label>
-                            <input type="number" id="qCircleDiameter" value="5" step="0.1">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="defaultQCircleX">X轴平移：</label>
-                            <input type="number" id="defaultQCircleX" value="3" step="0.1">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="defaultQCircleY">Y轴偏移：</label>
-                            <input type="number" id="defaultQCircleY" value="0" step="0.1">
-                        </div>
-                        
-                        <button class="add-q-circle-btn" id="addQCircleBtn" style="margin-top: 10px; width: 100%;">
-                            + 添加Q槽
-                        </button>
-                        
-                        <div id="qCircleList" style="margin-top: 15px;">
-                            <!-- Q槽列表将在这里动态添加 -->
-                        </div>
+                    <div id="qCircleList" style="margin-top: 15px;">
                     </div>
-                    
-                    <h3>起点坐标</h3>
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label for="startX">起点 X坐标：</label>
-                            <input type="number" id="startX" value="0" step="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="startY">起点 Y坐标：</label>
-                            <input type="number" id="startY" value="-28" step="0.1">
-                        </div>
-                    </div>
-                    
-                    <h3>旋转中心坐标</h3>
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label for="originX">旋转中心 X：</label>
-                            <input type="number" id="originX" value="0" step="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="originY">旋转中心 Y：</label>
-                            <input type="number" id="originY" value="0" step="0.1">
-                        </div>
-                    </div>
-                    
-                    <h3>加工参数</h3>
-                    <div class="machine-params">
-                        <div class="input-group">
-                            <label for="cuttingDepth">切削深度：</label>
-                            <input type="number" id="cuttingDepth" value="5.0" step="0.1">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="feedRate">进给速度：</label>
-                            <input type="number" id="feedRate" value="100" step="1">
-                        </div>
-                    </div>
-                    
-                    <h3>图形旋转</h3>
+                </div>
+                
+                <h3>起点坐标</h3>
+                <div class="input-row">
                     <div class="input-group">
-                        <label for="rotationAngle">旋转角度：</label>
-                        <select id="rotationAngle">
-                            <option value="0">0° (不旋转)</option>
-                            <option value="180">180° (上下翻转)</option>
-                            <option value="90">90°</option>
-                            <option value="270">270°</option>
-                            <option value="custom">自定义角度</option>
-                        </select>
+                        <label for="startX">起点 X坐标：</label>
+                        <input type="number" id="startX" value="0" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label for="startY">起点 Y坐标：</label>
+                        <input type="number" id="startY" value="-28" step="0.1">
+                    </div>
+                </div>
+                
+                <h3>旋转中心坐标</h3>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="originX">旋转中心 X：</label>
+                        <input type="number" id="originX" value="0" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label for="originY">旋转中心 Y：</label>
+                        <input type="number" id="originY" value="0" step="0.1">
+                    </div>
+                </div>
+                
+                <h3>加工参数</h3>
+                <div class="machine-params">
+                    <div class="input-group">
+                        <label for="cuttingDepth">切削深度：</label>
+                        <input type="number" id="cuttingDepth" value="5.0" step="0.1">
                     </div>
                     
-                    <div class="input-group" id="customAngleGroup" style="display: none;">
-                        <label for="customAngleValue">自定义角度：</label>
-                        <input type="number" id="customAngleValue" value="0" step="1" min="-360" max="360">
+                    <div class="input-group">
+                        <label for="feedRate">进给速度：</label>
+                        <input type="number" id="feedRate" value="100" step="1">
                     </div>
-                    
-                    <div class="button-group" style="margin-top: 10px;">
-                        <button id="rotateBtn" style="flex: 1;" class="rotate-btn">🔄 应用旋转</button>
-                    </div>
-                    
-                    <div class="button-group" style="margin-top: 10px;">
-                        <button id="reverseBtn" style="flex: 1;" class="reverse-btn">🔄 反转加工顺序</button>
-                    </div>
-                    
-                    <div class="button-group">
-                        <button id="resetBtn" style="flex: 1;">🗑️ 清除所有参数</button>
-                    </div>
-                    
-                    <!-- 连接线数据部分 -->
-                    <div class="data-section">
-                        <h3 id="connectionTitle">旋转加工数据</h3>
-                        <div class="table-container">
-                            <table id="connectionTable">
-                                <thead>
-                                    <tr>
-                                        <th>序号</th>
-                                        <th>槽类型</th>
-                                        <th>旋转角度</th>
-                                        <th>旋转半径</th>
-                                        <th>方向</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="connectionTableBody">
-                                    <!-- 连接线数据将在这里动态添加 -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <h3 style="margin-top: 20px;">参考信息</h3>
-                        <table>
-                            <tr>
-                                <th>参数</th>
-                                <th>值</th>
-                            </tr>
-                            <tr>
-                                <td>旋转中心</td>
-                                <td id="originCoord" class="coordinate">(0.00, 0.00)</td>
-                            </tr>
-                            <tr>
-                                <td>起点坐标</td>
-                                <td id="startCoord" class="coordinate">(0.00, -28.00)</td>
-                            </tr>
-                            <tr>
-                                <td>旋转半径</td>
-                                <td id="rotationRadius" class="dimension">28.00</td>
-                            </tr>
-                            <tr>
-                                <td>R1坐标</td>
-                                <td id="r1Coord" class="coordinate">(3.60, 18.70)</td>
-                            </tr>
-                            <tr>
-                                <td>R2坐标</td>
-                                <td id="r2Coord" class="coordinate">(27.00, 4.50)</td>
-                            </tr>
-                            <tr>
-                                <td>中心线长度</td>
-                                <td id="centerLength" class="dimension">27.30</td>
-                            </tr>
-                            <tr>
-                                <td>中心线角度</td>
-                                <td id="centerAngle" class="angle">-29.10°</td>
-                            </tr>
-                            <tr>
-                                <td>槽间距</td>
-                                <td id="parallelSpacing" class="dimension">7.10</td>
-                            </tr>
-                            <tr>
-                                <td>C槽数量</td>
-                                <td id="circleCount">2</td>
-                            </tr>
-                            <tr>
-                                <td>Q槽数量</td>
-                                <td id="qCircleCountDisplay">0</td>
-                            </tr>
-                            <tr>
-                                <td>图形旋转</td>
-                                <td id="graphRotationDisplay">0°</td>
-                            </tr>
+                </div>
+                
+                <h3>图形旋转</h3>
+                <div class="input-group">
+                    <label for="rotationAngle">旋转角度：</label>
+                    <select id="rotationAngle">
+                        <option value="0">0° (不旋转)</option>
+                        <option value="180">180° (上下翻转)</option>
+                        <option value="90">90°</option>
+                        <option value="270">270°</option>
+                        <option value="custom">自定义角度</option>
+                    </select>
+                </div>
+                
+                <div class="input-group" id="customAngleGroup" style="display: none;">
+                    <label for="customAngleValue">自定义角度：</label>
+                    <input type="number" id="customAngleValue" value="0" step="1" min="-360" max="360">
+                </div>
+                
+                <div class="button-group" style="margin-top: 10px;">
+                    <button id="rotateBtn" style="flex: 1;" class="rotate-btn">🔄 应用旋转</button>
+                </div>
+                
+                <div class="button-group" style="margin-top: 10px;">
+                    <button id="reverseBtn" style="flex: 1;" class="reverse-btn">🔄 反转加工顺序</button>
+                </div>
+                
+                <div class="button-group">
+                    <button id="resetBtn" style="flex: 1;">🗑️ 清除所有参数</button>
+                </div>
+                
+                <div class="data-section">
+                    <h3 id="connectionTitle">旋转加工数据</h3>
+                    <div class="table-container">
+                        <table id="connectionTable">
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>槽类型</th>
+                                    <th>旋转角度</th>
+                                    <th>旋转半径</th>
+                                    <th>方向</th>
+                                </tr>
+                            </thead>
+                            <tbody id="connectionTableBody">
+                            </tbody>
                         </table>
                     </div>
                     
-                    <div class="program-section">
-                        <div class="program-header">
-                            <h3>CNC加工程序</h3>
-                            <button class="export-btn" id="exportProgramBtn">📥 导出</button>
-                        </div>
-                        
-                        <div class="program-tabs">
-                            <div class="program-tab active" data-tab="program1">第一套程序</div>
-                            <div class="program-tab" data-tab="program2">第二套程序</div>
-                        </div>
-                        
-                        <div class="program-content active" id="program1Content">
-                            <div class="program-output" id="programOutput1">
-                                <!-- 第一套程序代码将在这里显示 -->
-                            </div>
-                        </div>
-                        
-                        <div class="program-content" id="program2Content">
-                            <div class="program-output" id="programOutput2">
-                                <!-- 第二套程序代码将在这里显示 -->
-                            </div>
+                    <h3 style="margin-top: 20px;">参考信息</h3>
+                    <table>
+                        <tr>
+                            <th>参数</th>
+                            <th>值</th>
+                        </tr>
+                        <tr>
+                            <td>旋转中心</td>
+                            <td id="originCoord" class="coordinate">(0.00, 0.00)</td>
+                        </tr>
+                        <tr>
+                            <td>起点坐标</td>
+                            <td id="startCoord" class="coordinate">(0.00, -28.00)</td>
+                        </tr>
+                        <tr>
+                            <td>旋转半径</td>
+                            <td id="rotationRadius" class="dimension">28.00</td>
+                        </tr>
+                        <tr>
+                            <td>R1坐标</td>
+                            <td id="r1Coord" class="coordinate">(3.60, 18.70)</td>
+                        </tr>
+                        <tr>
+                            <td>R2坐标</td>
+                            <td id="r2Coord" class="coordinate">(27.00, 4.50)</td>
+                        </tr>
+                        <tr>
+                            <td>中心线长度</td>
+                            <td id="centerLength" class="dimension">27.30</td>
+                        </tr>
+                        <tr>
+                            <td>中心线角度</td>
+                            <td id="centerAngle" class="angle">-29.10°</td>
+                        </tr>
+                        <tr>
+                            <td>槽间距</td>
+                            <td id="parallelSpacing" class="dimension">7.10</td>
+                        </tr>
+                        <tr>
+                            <td>C槽数量</td>
+                            <td id="circleCount">2</td>
+                        </tr>
+                        <tr>
+                            <td>Q槽数量</td>
+                            <td id="qCircleCountDisplay">0</td>
+                        </tr>
+                        <tr>
+                            <td>图形旋转</td>
+                            <td id="graphRotationDisplay">0°</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="program-section">
+                    <div class="program-header">
+                        <h3>CNC加工程序</h3>
+                        <button class="export-btn" id="exportProgramBtn">📥 导出</button>
+                    </div>
+                    
+                    <div class="program-tabs">
+                        <div class="program-tab active" data-tab="program1">第一套程序</div>
+                        <div class="program-tab" data-tab="program2">第二套程序</div>
+                    </div>
+                    
+                    <div class="program-content active" id="program1Content">
+                        <div class="program-output" id="programOutput1">
                         </div>
                     </div>
                     
-                    <!-- 开发者信息 -->
-                    <div class="developer-info">
-                        <p>
-                            本工具由 <span class="highlight">鱼</span> 与 
-                            <a href="https://www.deepseek.com" target="_blank" rel="noopener noreferrer">DeepSeek AI</a> 
-                            共同开发<br>
-                            用于阀座槽加工计算与CNC程序生成
-                        </p>
-                        <p style="margin-top: 10px;">
-                            <a href="https://github.com/Xiaowuyu273637/Valve-Seat-Groove-Calculator" 
-                               target="_blank" 
-                               rel="noopener noreferrer"
-                               style="color: #3498db; text-decoration: none;">
-                                🌟 GitHub仓库: Valve-Seat-Groove-Calculator
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 右侧画布区域 -->
-            <div class="panel canvas-container">
-                <div class="canvas-title">
-                    <h2>📐 阀座槽布局图</h2>
-                </div>
-                <div class="canvas-wrapper" id="canvasWrapper">
-                    <canvas id="mainCanvas"></canvas>
-                    <div class="loading-overlay" id="loadingOverlay">
-                        <div style="text-align: center;">
-                            <div style="font-size: 24px; margin-bottom: 10px;">🔄</div>
-                            <div>正在更新图形...</div>
+                    <div class="program-content" id="program2Content">
+                        <div class="program-output" id="programOutput2">
                         </div>
                     </div>
-                    <div class="status-bar" id="statusBar">
-                        缩放: 100% | 坐标系: Y轴向上为正 | 旋转: 0°
-                    </div>
+                </div>
+                
+                <div class="developer-info">
+                    <p>
+                        本工具由 <a href="https://github.com/Xiaowuyu273637/Valve-Seat-Groove-Calculator" target="_blank" rel="noopener noreferrer">鱼</a> 与 <a href="https://www.deepseek.com" target="_blank" rel="noopener noreferrer">DeepSeek AI</a> 共同开发<br>
+                        用于阀座槽加工计算与CNC程序生成<br>
+                        <a href="https://www.deepseek.com" target="_blank" rel="noopener noreferrer">DeepSeek AI官网：https://www.deepseek.com</a><br>
+                        <a href="https://github.com/Xiaowuyu273637/Valve-Seat-Groove-Calculator" target="_blank" rel="noopener noreferrer">GitHub 仓库：https://github.com/Xiaowuyu273637/Valve-Seat-Groove-Calculator</a>
+                    </p>
                 </div>
             </div>
         </div>
         
-        <!-- 导出模态框 -->
-        <div class="modal-overlay" id="exportModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>导出CNC程序</h3>
-                </div>
-                <div class="modal-body">
-                    <input type="text" class="modal-input" id="fileNameInput" placeholder="请输入文件名（可含扩展名）">
-                    <div class="info-text" style="margin-top: 10px;">
-                        输入完整的文件名，如：cnc_program.txt 或 cnc_program
+        <div class="panel canvas-container">
+            <div class="canvas-title">
+                <h2>📐 阀座槽布局图</h2>
+            </div>
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <canvas id="mainCanvas"></canvas>
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">🔄</div>
+                        <div>正在更新图形...</div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="modal-btn secondary" id="cancelExportBtn">取消</button>
-                    <button class="modal-btn primary" id="confirmExportBtn">导出</button>
+                <div class="status-bar" id="statusBar">
+                    缩放: 100% | 坐标系: Y轴向上为正 | 旋转: 0°
                 </div>
             </div>
         </div>
+    </div>
+    
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>导出CNC程序</h3>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="fileNameInput" placeholder="请输入文件名（可含扩展名）">
+                <div class="info-text" style="margin-top: 10px;">
+                    输入完整的文件名，如：cnc_program.txt 或 cnc_program
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="cancelExportBtn">取消</button>
+                <button class="modal-btn primary" id="confirmExportBtn">导出</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusBar = document.getElementById('statusBar');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const canvasWrapper = document.getElementById('canvasWrapper');
         
-        <script>
-            // 获取DOM元素
-            const canvas = document.getElementById('mainCanvas');
-            const ctx = canvas.getContext('2d');
-            const statusBar = document.getElementById('statusBar');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const canvasWrapper = document.getElementById('canvasWrapper');
+        const r1XInput = document.getElementById('r1X');
+        const r1YInput = document.getElementById('r1Y');
+        const r2XInput = document.getElementById('r2X');
+        const r2YInput = document.getElementById('r2Y');
+        const bigCircleDiameterInput = document.getElementById('bigCircleDiameter');
+        const smallCircleDiameterInput = document.getElementById('smallCircleDiameter');
+        const parallelDiameterInput = document.getElementById('parallelDiameter');
+        const halfParallelSpan = document.getElementById('halfParallel');
+        const smallCircleDiameter2Input = document.getElementById('smallCircleDiameter2');
+        const startXInput = document.getElementById('startX');
+        const startYInput = document.getElementById('startY');
+        const originXInput = document.getElementById('originX');
+        const originYInput = document.getElementById('originY');
+        const cuttingDepthInput = document.getElementById('cuttingDepth');
+        const feedRateInput = document.getElementById('feedRate');
+        const rotationAngleSelect = document.getElementById('rotationAngle');
+        const customAngleGroup = document.getElementById('customAngleGroup');
+        const customAngleValue = document.getElementById('customAngleValue');
+        const rotateBtn = document.getElementById('rotateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const reverseBtn = document.getElementById('reverseBtn');
+        const addCircleBtn = document.getElementById('addCircleBtn');
+        const switchModeBtn = document.getElementById('switchModeBtn');
+        const cCircleList = document.getElementById('cCircleList');
+        const exportProgramBtn = document.getElementById('exportProgramBtn');
+        const programOutput1 = document.getElementById('programOutput1');
+        const programOutput2 = document.getElementById('programOutput2');
+        const graphRotationDisplay = document.getElementById('graphRotationDisplay');
+        
+        const qCircleDiameterInput = document.getElementById('qCircleDiameter');
+        const defaultQCircleXInput = document.getElementById('defaultQCircleX');
+        const defaultQCircleYInput = document.getElementById('defaultQCircleY');
+        const addQCircleBtn = document.getElementById('addQCircleBtn');
+        const qCircleListContainer = document.getElementById('qCircleList');
+        const qCircleCountDisplay = document.getElementById('qCircleCountDisplay');
+        
+        const exportModal = document.getElementById('exportModal');
+        const fileNameInput = document.getElementById('fileNameInput');
+        const cancelExportBtn = document.getElementById('cancelExportBtn');
+        const confirmExportBtn = document.getElementById('confirmExportBtn');
+        
+        const programTabs = document.querySelectorAll('.program-tab');
+        
+        const originCoord = document.getElementById('originCoord');
+        const startCoord = document.getElementById('startCoord');
+        const r1Coord = document.getElementById('r1Coord');
+        const r2Coord = document.getElementById('r2Coord');
+        const rotationRadius = document.getElementById('rotationRadius');
+        const centerLength = document.getElementById('centerLength');
+        const centerAngle = document.getElementById('centerAngle');
+        const parallelSpacing = document.getElementById('parallelSpacing');
+        const circleCount = document.getElementById('circleCount');
+        const connectionTitle = document.getElementById('connectionTitle');
+        const connectionTableBody = document.getElementById('connectionTableBody');
+        
+        const defaultParams = {
+            r1X: 3.6,
+            r1Y: 18.7,
+            r2X: 27,
+            r2Y: 4.5,
+            bigCircleDiameter: 14,
+            smallCircleDiameter: 8.4,
+            parallelDiameter: 7.1,
+            smallCircleDiameter2: 4,
+            qCircleDiameter: 5,
+            qCircleX: 3,
+            qCircleY: 0,
+            startX: 0,
+            startY: -28,
+            originX: 0,
+            originY: 0,
+            cuttingDepth: 5.0,
+            feedRate: 100
+        };
+        
+        // C槽数据 - C1和C2都默认绝对位置，C2平移8.5，垂直2.3，都是单边距离
+        let cCircles = [
+            { 
+                id: 1, 
+                moveDistance: 6.3, 
+                offsetDistance: 3.2, 
+                name: 'C1',
+                type: 'absolute',
+                baseCircleId: null,
+                moveMode: 'single', // 平移距离模式：single单边，double双边
+                offsetMode: 'single'  // 垂直偏移模式：single单边，double双边
+            },
+            { 
+                id: 2, 
+                moveDistance: 8.5,
+                offsetDistance: 2.3,
+                name: 'C2',
+                type: 'absolute',
+                baseCircleId: null,
+                moveMode: 'single',
+                offsetMode: 'single'
+            }
+        ];
+        
+        let qCircles = [];
+        
+        let params = {...defaultParams};
+        let isDrawing = false;
+        let currentScale = 6;
+        let viewOffsetX = 0;
+        let viewOffsetY = 0;
+        let isInitialized = false;
+        let nextCircleId = 3;
+        let nextQCircleId = 1;
+        let currentProgram = 'program1';
+        let reverseOrder = false;
+        let connectionOrder = [];
+        let graphRotation = 0;
+        let resizeObserver = null;
+        
+        function roundToTwoDecimals(num) {
+            return Math.round(num * 100) / 100;
+        }
+        
+        function calculateHalfParallel(diameter) {
+            return diameter / 2;
+        }
+        
+        function updateParallelHalfDisplay() {
+            const half = calculateHalfParallel(params.parallelDiameter);
+            halfParallelSpan.textContent = roundToTwoDecimals(half).toFixed(2);
+            parallelSpacing.textContent = roundToTwoDecimals(params.parallelDiameter).toFixed(2);
+        }
+        
+        function calculateDistance(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        }
+        
+        function calculateRotationAngle(centerX, centerY, startX, startY, targetX, targetY) {
+            const startVecX = startX - centerX;
+            const startVecY = startY - centerY;
+            const targetVecX = targetX - centerX;
+            const targetVecY = targetY - centerY;
             
-            // 获取输入元素
-            const r1XInput = document.getElementById('r1X');
-            const r1YInput = document.getElementById('r1Y');
-            const r2XInput = document.getElementById('r2X');
-            const r2YInput = document.getElementById('r2Y');
-            const bigCircleDiameterInput = document.getElementById('bigCircleDiameter');
-            const smallCircleDiameterInput = document.getElementById('smallCircleDiameter');
-            const parallelDiameterInput = document.getElementById('parallelDiameter');
-            const halfParallelSpan = document.getElementById('halfParallel');
-            const smallCircleDiameter2Input = document.getElementById('smallCircleDiameter2');
-            const startXInput = document.getElementById('startX');
-            const startYInput = document.getElementById('startY');
-            const originXInput = document.getElementById('originX');
-            const originYInput = document.getElementById('originY');
-            const cuttingDepthInput = document.getElementById('cuttingDepth');
-            const feedRateInput = document.getElementById('feedRate');
-            const rotationAngleSelect = document.getElementById('rotationAngle');
-            const customAngleGroup = document.getElementById('customAngleGroup');
-            const customAngleValue = document.getElementById('customAngleValue');
-            const rotateBtn = document.getElementById('rotateBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            const reverseBtn = document.getElementById('reverseBtn');
-            const addCircleBtn = document.getElementById('addCircleBtn');
-            const switchModeBtn = document.getElementById('switchModeBtn');
-            const cCircleList = document.getElementById('cCircleList');
-            const exportProgramBtn = document.getElementById('exportProgramBtn');
-            const programOutput1 = document.getElementById('programOutput1');
-            const programOutput2 = document.getElementById('programOutput2');
-            const graphRotationDisplay = document.getElementById('graphRotationDisplay');
+            const startAngle = Math.atan2(startVecY, startVecX) * 180 / Math.PI;
+            const targetAngle = Math.atan2(targetVecY, targetVecX) * 180 / Math.PI;
             
-            // Q槽相关元素
-            const qCircleDiameterInput = document.getElementById('qCircleDiameter');
-            const defaultQCircleXInput = document.getElementById('defaultQCircleX');
-            const defaultQCircleYInput = document.getElementById('defaultQCircleY');
-            const addQCircleBtn = document.getElementById('addQCircleBtn');
-            const qCircleListContainer = document.getElementById('qCircleList');
-            const qCircleCountDisplay = document.getElementById('qCircleCountDisplay');
+            let rotationAngle = targetAngle - startAngle;
             
-            // 获取模态框相关元素
-            const exportModal = document.getElementById('exportModal');
-            const fileNameInput = document.getElementById('fileNameInput');
-            const cancelExportBtn = document.getElementById('cancelExportBtn');
-            const confirmExportBtn = document.getElementById('confirmExportBtn');
+            if (rotationAngle > 180) {
+                rotationAngle -= 360;
+            } else if (rotationAngle < -180) {
+                rotationAngle += 360;
+            }
             
-            // 获取程序切换相关元素
-            const programTabs = document.querySelectorAll('.program-tab');
+            let direction = rotationAngle >= 0 ? '逆时针' : '顺时针';
+            const radius = calculateDistance(centerX, centerY, targetX, targetY);
             
-            // 获取数据显示元素
-            const originCoord = document.getElementById('originCoord');
-            const startCoord = document.getElementById('startCoord');
-            const r1Coord = document.getElementById('r1Coord');
-            const r2Coord = document.getElementById('r2Coord');
-            const rotationRadius = document.getElementById('rotationRadius');
-            const centerLength = document.getElementById('centerLength');
-            const centerAngle = document.getElementById('centerAngle');
-            const parallelSpacing = document.getElementById('parallelSpacing');
-            const circleCount = document.getElementById('circleCount');
-            const connectionTitle = document.getElementById('connectionTitle');
-            const connectionTableBody = document.getElementById('connectionTableBody');
-            
-            // 默认参数
-            const defaultParams = {
-                r1X: 3.6,
-                r1Y: 18.7,
-                r2X: 27,
-                r2Y: 4.5,
-                bigCircleDiameter: 14,
-                smallCircleDiameter: 8.4,
-                parallelDiameter: 7.1,
-                smallCircleDiameter2: 4,
-                qCircleDiameter: 5,
-                qCircleX: 3,
-                qCircleY: 0,
-                startX: 0,
-                startY: -28,
-                originX: 0,
-                originY: 0,
-                cuttingDepth: 5.0,
-                feedRate: 100
+            return {
+                rotationAngle: rotationAngle,
+                absoluteAngle: Math.abs(rotationAngle),
+                direction: direction,
+                startAngle: startAngle,
+                targetAngle: targetAngle,
+                radius: radius,
+                startVecX: startVecX,
+                startVecY: startVecY,
+                targetVecX: targetVecX,
+                targetVecY: targetVecY
             };
-            
-            // C槽数据 - 支持增量编程
-            let cCircles = [
-                { 
-                    id: 1, 
-                    moveDistance: 6.3, 
-                    offsetDistance: 3.2, 
-                    name: 'C1',
-                    type: 'absolute',
-                    baseCircleId: null
-                },
-                { 
-                    id: 2, 
-                    moveDistance: 2.2,
-                    offsetDistance: -0.9,
-                    name: 'C2',
-                    type: 'incremental',
-                    baseCircleId: 1
-                }
-            ];
-            
-            // Q槽数据 - 默认为空
-            let qCircles = [];
-            
-            // 当前参数
-            let params = {...defaultParams};
-            let isDrawing = false;
-            let currentScale = 6;
-            let viewOffsetX = 0;
-            let viewOffsetY = 0;
-            let isInitialized = false;
-            let nextCircleId = 3;
-            let nextQCircleId = 1;
-            let currentProgram = 'program1';
-            let reverseOrder = false;
-            let connectionOrder = [];
-            
-            // 图形旋转角度
-            let graphRotation = 0;
-            
-            // 观察器实例
-            let inputObserver = null;
-            let resizeObserver = null;
-            
-            // 四舍五入保留两位小数
-            function roundToTwoDecimals(num) {
-                return Math.round(num * 100) / 100;
+        }
+        
+        function rotatePointAroundOrigin(pointX, pointY, originX, originY, angleDeg) {
+            if (angleDeg === 0) {
+                return { x: pointX, y: pointY };
             }
             
-            // 计算平行线半距
-            function calculateHalfParallel(diameter) {
-                return diameter / 2;
+            const angleRad = angleDeg * Math.PI / 180;
+            const cosAngle = Math.cos(angleRad);
+            const sinAngle = Math.sin(angleRad);
+            
+            const translatedX = pointX - originX;
+            const translatedY = pointY - originY;
+            
+            const rotatedX = translatedX * cosAngle - translatedY * sinAngle;
+            const rotatedY = translatedX * sinAngle + translatedY * cosAngle;
+            
+            return {
+                x: rotatedX + originX,
+                y: rotatedY + originY
+            };
+        }
+        
+        function calculateGeometry() {
+            const { r1X, r1Y, r2X, r2Y, startX, startY, originX, originY } = params;
+            
+            let rotatedR1X = r1X, rotatedR1Y = r1Y;
+            let rotatedR2X = r2X, rotatedR2Y = r2Y;
+            let rotatedStartX = startX, rotatedStartY = startY;
+            
+            if (graphRotation !== 0) {
+                const rotatedR1 = rotatePointAroundOrigin(r1X, r1Y, originX, originY, graphRotation);
+                rotatedR1X = rotatedR1.x;
+                rotatedR1Y = rotatedR1.y;
+                
+                const rotatedR2 = rotatePointAroundOrigin(r2X, r2Y, originX, originY, graphRotation);
+                rotatedR2X = rotatedR2.x;
+                rotatedR2Y = rotatedR2.y;
             }
             
-            // 更新平行线半距显示
-            function updateParallelHalfDisplay() {
-                const half = calculateHalfParallel(params.parallelDiameter);
-                halfParallelSpan.textContent = roundToTwoDecimals(half).toFixed(2);
-                parallelSpacing.textContent = roundToTwoDecimals(params.parallelDiameter).toFixed(2);
+            const dx = rotatedR2X - rotatedR1X;
+            const dy = rotatedR2Y - rotatedR1Y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            
+            if (length === 0) {
+                return { length: 0, connectionLines: [], circles: {} };
             }
             
-            // 计算距离
-            function calculateDistance(x1, y1, x2, y2) {
-                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-            }
+            const ux = dx / length;
+            const uy = dy / length;
+            const vx = -uy;
+            const vy = ux;
             
-            // 计算旋转角度（顺时针为正数，逆时针为负数）
-            function calculateRotationAngle(centerX, centerY, startX, startY, targetX, targetY) {
-                const startVecX = startX - centerX;
-                const startVecY = startY - centerY;
-                const targetVecX = targetX - centerX;
-                const targetVecY = targetY - centerY;
-                
-                const startAngle = Math.atan2(startVecY, startVecX) * 180 / Math.PI;
-                const targetAngle = Math.atan2(targetVecY, targetVecX) * 180 / Math.PI;
-                
-                let rotationAngle = targetAngle - startAngle;
-                
-                // 将角度调整到-180到180度之间
-                if (rotationAngle > 180) {
-                    rotationAngle -= 360;
-                } else if (rotationAngle < -180) {
-                    rotationAngle += 360;
-                }
-                
-                // 修正：顺时针为正数，逆时针为负数（根据最近原则）
-                rotationAngle = -rotationAngle;
-                
-                let direction = rotationAngle >= 0 ? '顺时针' : '逆时针';
-                const radius = calculateDistance(centerX, centerY, targetX, targetY);
-                
-                return {
-                    rotationAngle: rotationAngle,
-                    absoluteAngle: Math.abs(rotationAngle),
-                    direction: direction,
-                    startAngle: startAngle,
-                    targetAngle: targetAngle,
-                    radius: radius,
-                    startVecX: startVecX,
-                    startVecY: startVecY,
-                    targetVecX: targetVecX,
-                    targetVecY: targetVecY
-                };
-            }
+            const centerLineRotation = calculateRotationAngle(originX, originY, rotatedStartX, rotatedStartY, rotatedR2X, rotatedR2Y);
             
-            // 计算旋转后的坐标（绕旋转中心旋转）
-            function rotatePointAroundOrigin(pointX, pointY, originX, originY, angleDeg) {
-                if (angleDeg === 0) {
-                    return { x: pointX, y: pointY };
-                }
-                
-                const angleRad = angleDeg * Math.PI / 180;
-                const cosAngle = Math.cos(angleRad);
-                const sinAngle = Math.sin(angleRad);
-                
-                const translatedX = pointX - originX;
-                const translatedY = pointY - originY;
-                
-                const rotatedX = translatedX * cosAngle - translatedY * sinAngle;
-                const rotatedY = translatedX * sinAngle + translatedY * cosAngle;
-                
-                return {
-                    x: rotatedX + originX,
-                    y: rotatedY + originY
-                };
-            }
+            const circles = {};
+            const allCircles = [];
+            const circleOrder = [];
+            const absolutePositions = [];
             
-            // 计算几何参数 - 支持增量编程和图形旋转（起点不旋转）
-            function calculateGeometry() {
-                const { r1X, r1Y, r2X, r2Y, startX, startY, originX, originY } = params;
-                const parallelDistance = calculateHalfParallel(params.parallelDiameter);
+            for (const cCircle of cCircles) {
+                // 平移距离：根据模式决定是否除以2
+                let absoluteMoveDistance = cCircle.moveMode === 'double' ? cCircle.moveDistance / 2 : cCircle.moveDistance;
+                // 垂直偏移：根据模式决定是否除以2
+                let absoluteOffsetDistance = cCircle.offsetMode === 'double' ? cCircle.offsetDistance / 2 : cCircle.offsetDistance;
                 
-                // 图形旋转：只旋转R1、R2和中心线，不旋转起点
-                let rotatedR1X = r1X, rotatedR1Y = r1Y;
-                let rotatedR2X = r2X, rotatedR2Y = r2Y;
-                let rotatedStartX = startX, rotatedStartY = startY;
-                
-                if (graphRotation !== 0) {
-                    const rotatedR1 = rotatePointAroundOrigin(r1X, r1Y, originX, originY, graphRotation);
-                    rotatedR1X = rotatedR1.x;
-                    rotatedR1Y = rotatedR1.y;
-                    
-                    const rotatedR2 = rotatePointAroundOrigin(r2X, r2Y, originX, originY, graphRotation);
-                    rotatedR2X = rotatedR2.x;
-                    rotatedR2Y = rotatedR2.y;
-                }
-                
-                const dx = rotatedR2X - rotatedR1X;
-                const dy = rotatedR2Y - rotatedR1Y;
-                const length = Math.sqrt(dx * dx + dy * dy);
-                
-                if (length === 0) {
-                    return { length: 0, connectionLines: [], circles: {} };
-                }
-                
-                const ux = dx / length;
-                const uy = dy / length;
-                const vx = -uy;
-                const vy = ux;
-                
-                const centerLineRotation = calculateRotationAngle(originX, originY, rotatedStartX, rotatedStartY, rotatedR2X, rotatedR2Y);
-                
-                const circles = {};
-                const allCircles = [];
-                const circleOrder = [];
-                
-                const absolutePositions = [];
-                
-                for (const cCircle of cCircles) {
-                    let absoluteMoveDistance = cCircle.moveDistance;
-                    let absoluteOffsetDistance = cCircle.offsetDistance;
-                    
-                    if (cCircle.type === 'incremental' && cCircle.baseCircleId) {
-                        const baseCircle = cCircles.find(c => c.id === cCircle.baseCircleId);
-                        if (baseCircle) {
-                            const baseAbsolute = absolutePositions.find(p => p.id === baseCircle.id);
-                            if (baseAbsolute) {
-                                absoluteMoveDistance = baseAbsolute.moveDist + cCircle.moveDistance;
-                                absoluteOffsetDistance = baseAbsolute.offsetDist + cCircle.offsetDistance;
-                            }
+                if (cCircle.type === 'incremental' && cCircle.baseCircleId) {
+                    const baseCircle = cCircles.find(c => c.id === cCircle.baseCircleId);
+                    if (baseCircle) {
+                        const baseAbsolute = absolutePositions.find(p => p.id === baseCircle.id);
+                        if (baseAbsolute) {
+                            const baseMove = baseCircle.moveMode === 'double' ? baseCircle.moveDistance / 2 : baseCircle.moveDistance;
+                            const baseOffset = baseCircle.offsetMode === 'double' ? baseCircle.offsetDistance / 2 : baseCircle.offsetDistance;
+                            absoluteMoveDistance = baseMove + (cCircle.moveMode === 'double' ? cCircle.moveDistance / 2 : cCircle.moveDistance);
+                            absoluteOffsetDistance = baseOffset + (cCircle.offsetMode === 'double' ? cCircle.offsetDistance / 2 : cCircle.offsetDistance);
                         }
                     }
-                    
-                    absolutePositions.push({
-                        id: cCircle.id,
-                        moveDist: absoluteMoveDistance,
-                        offsetDist: absoluteOffsetDistance
-                    });
-                    
-                    const circleDown = {
-                        x: rotatedR1X + absoluteMoveDistance * ux - absoluteOffsetDistance * vx,
-                        y: rotatedR1Y + absoluteMoveDistance * uy - absoluteOffsetDistance * vy,
-                        moveDist: absoluteMoveDistance,
-                        offsetDist: -absoluteOffsetDistance,
-                        type: cCircle.name,
-                        name: `${cCircle.name}-下`,
-                        id: cCircle.id,
-                        category: 'C',
-                        orderIndex: (cCircle.id - 1) * 2,
-                        originalMove: cCircle.moveDistance,
-                        originalOffset: cCircle.offsetDistance,
-                        positionType: cCircle.type,
-                        baseCircleId: cCircle.baseCircleId,
-                        isUpper: false
-                    };
-                    
-                    const circleUp = {
-                        x: rotatedR1X + absoluteMoveDistance * ux + absoluteOffsetDistance * vx,
-                        y: rotatedR1Y + absoluteMoveDistance * uy + absoluteOffsetDistance * vy,
-                        moveDist: absoluteMoveDistance,
-                        offsetDist: absoluteOffsetDistance,
-                        type: cCircle.name,
-                        name: `${cCircle.name}-上`,
-                        id: cCircle.id,
-                        category: 'C',
-                        orderIndex: (cCircle.id - 1) * 2 + 1,
-                        originalMove: cCircle.moveDistance,
-                        originalOffset: cCircle.offsetDistance,
-                        positionType: cCircle.type,
-                        baseCircleId: cCircle.baseCircleId,
-                        isUpper: true
-                    };
-                    
-                    circles[`circle${cCircle.id}Down`] = circleDown;
-                    circles[`circle${cCircle.id}Up`] = circleUp;
-                    
-                    circleOrder.push(circleDown, circleUp);
-                    allCircles.push(circleDown, circleUp);
                 }
                 
-                // 添加Q槽
-                for (const qCircle of qCircles) {
-                    const qCircleObj = {
-                        x: rotatedR1X + qCircle.xOffset,
-                        y: rotatedR1Y + qCircle.yOffset,
-                        xOffset: qCircle.xOffset,
-                        yOffset: qCircle.yOffset,
-                        type: qCircle.name,
-                        name: qCircle.name,
-                        id: qCircle.id,
-                        category: 'Q',
-                        orderIndex: circleOrder.length
-                    };
-                    
-                    circles[`qCircle${qCircle.id}`] = qCircleObj;
-                    circleOrder.push(qCircleObj);
-                    allCircles.push(qCircleObj);
-                }
+                absolutePositions.push({
+                    id: cCircle.id,
+                    moveDist: absoluteMoveDistance,
+                    offsetDist: absoluteOffsetDistance
+                });
                 
-                // 计算每个槽的旋转角度和距离
-                for (const circle of allCircles) {
-                    const rotation = calculateRotationAngle(originX, originY, rotatedStartX, rotatedStartY, circle.x, circle.y);
-                    circle.rotationAngle = rotation.rotationAngle;
-                    circle.absoluteAngle = rotation.absoluteAngle;
-                    circle.direction = rotation.direction;
-                    circle.startAngle = rotation.startAngle;
-                    circle.targetAngle = rotation.targetAngle;
-                    circle.radius = rotation.radius;
-                    circle.distanceToStart = calculateDistance(rotatedStartX, rotatedStartY, circle.x, circle.y);
-                }
+                const circleDown = {
+                    x: rotatedR1X + absoluteMoveDistance * ux - absoluteOffsetDistance * vx,
+                    y: rotatedR1Y + absoluteMoveDistance * uy - absoluteOffsetDistance * vy,
+                    moveDist: absoluteMoveDistance,
+                    offsetDist: -absoluteOffsetDistance,
+                    type: cCircle.name,
+                    name: `${cCircle.name}-下`,
+                    id: cCircle.id,
+                    category: 'C',
+                    orderIndex: (cCircle.id - 1) * 2,
+                    originalMove: cCircle.moveDistance,
+                    originalOffset: cCircle.offsetDistance,
+                    positionType: cCircle.type,
+                    baseCircleId: cCircle.baseCircleId,
+                    isUpper: false,
+                    moveMode: cCircle.moveMode,
+                    offsetMode: cCircle.offsetMode
+                };
                 
-                // 固定加工顺序：C1下 → C2下 → C1上 → C2上 → Q槽
-                let sortedCircles = [...circleOrder];
+                const circleUp = {
+                    x: rotatedR1X + absoluteMoveDistance * ux + absoluteOffsetDistance * vx,
+                    y: rotatedR1Y + absoluteMoveDistance * uy + absoluteOffsetDistance * vy,
+                    moveDist: absoluteMoveDistance,
+                    offsetDist: absoluteOffsetDistance,
+                    type: cCircle.name,
+                    name: `${cCircle.name}-上`,
+                    id: cCircle.id,
+                    category: 'C',
+                    orderIndex: (cCircle.id - 1) * 2 + 1,
+                    originalMove: cCircle.moveDistance,
+                    originalOffset: cCircle.offsetDistance,
+                    positionType: cCircle.type,
+                    baseCircleId: cCircle.baseCircleId,
+                    isUpper: true,
+                    moveMode: cCircle.moveMode,
+                    offsetMode: cCircle.offsetMode
+                };
                 
-                if (reverseOrder) {
-                    sortedCircles = [...sortedCircles].reverse();
-                }
+                circles[`circle${cCircle.id}Down`] = circleDown;
+                circles[`circle${cCircle.id}Up`] = circleUp;
                 
-                connectionOrder = sortedCircles.map((circle, index) => ({
-                    index: index + 1,
-                    name: circle.name,
-                    category: circle.category,
+                circleOrder.push(circleDown, circleUp);
+                allCircles.push(circleDown, circleUp);
+            }
+            
+            for (const qCircle of qCircles) {
+                const qCircleObj = {
+                    x: rotatedR1X + qCircle.xOffset,
+                    y: rotatedR1Y + qCircle.yOffset,
+                    xOffset: qCircle.xOffset,
+                    yOffset: qCircle.yOffset,
+                    type: qCircle.name,
+                    name: qCircle.name,
+                    id: qCircle.id,
+                    category: 'Q',
+                    orderIndex: circleOrder.length
+                };
+                
+                circles[`qCircle${qCircle.id}`] = qCircleObj;
+                circleOrder.push(qCircleObj);
+                allCircles.push(qCircleObj);
+            }
+            
+            for (const circle of allCircles) {
+                const rotation = calculateRotationAngle(originX, originY, rotatedStartX, rotatedStartY, circle.x, circle.y);
+                circle.rotationAngle = rotation.rotationAngle;
+                circle.absoluteAngle = rotation.absoluteAngle;
+                circle.direction = rotation.direction;
+                circle.startAngle = rotation.startAngle;
+                circle.targetAngle = rotation.targetAngle;
+                circle.radius = rotation.radius;
+                circle.distanceToStart = calculateDistance(rotatedStartX, rotatedStartY, circle.x, circle.y);
+            }
+            
+            let sortedCircles = [...circleOrder];
+            
+            if (reverseOrder) {
+                sortedCircles = [...sortedCircles].reverse();
+            }
+            
+            connectionOrder = sortedCircles.map((circle, index) => ({
+                index: index + 1,
+                name: circle.name,
+                category: circle.category,
+                rotationAngle: circle.rotationAngle,
+                radius: circle.radius,
+                distanceToStart: circle.distanceToStart
+            }));
+            
+            const connectionLines = [];
+            for (let i = 0; i < sortedCircles.length; i++) {
+                const circle = sortedCircles[i];
+                
+                connectionLines.push({
+                    from: {x: originX, y: originY},
+                    to: circle,
                     rotationAngle: circle.rotationAngle,
+                    absoluteAngle: circle.absoluteAngle,
+                    direction: circle.direction,
                     radius: circle.radius,
-                    distanceToStart: circle.distanceToStart
-                }));
-                
-                // 计算连接线数据
-                const connectionLines = [];
-                for (let i = 0; i < sortedCircles.length; i++) {
-                    const circle = sortedCircles[i];
-                    
-                    connectionLines.push({
-                        from: {x: originX, y: originY},
-                        to: circle,
-                        rotationAngle: circle.rotationAngle,
-                        absoluteAngle: circle.absoluteAngle,
-                        direction: circle.direction,
-                        radius: circle.radius,
-                        startAngle: circle.startAngle,
-                        targetAngle: circle.targetAngle,
-                        index: i + 1,
-                        name: circle.name,
-                        category: circle.category
-                    });
-                }
-                
-                return {
-                    dx, dy, length, ux, uy, vx, vy, 
-                    rotationAngle: centerLineRotation.rotationAngle,
-                    absoluteAngle: centerLineRotation.absoluteAngle,
-                    angleDirection: centerLineRotation.direction,
-                    circles, 
-                    parallelDistance, connectionLines, allCircles, sortedCircles,
-                    rotatedR1X, rotatedR1Y, rotatedR2X, rotatedR2Y, rotatedStartX, rotatedStartY
-                };
-            }
-            
-            // 计算所有点的边界
-            function calculateBounds() {
-                const geometry = calculateGeometry();
-                const { startX, startY, originX, originY } = params;
-                
-                let minX = Math.min(geometry.rotatedStartX, geometry.rotatedR1X, geometry.rotatedR2X, originX);
-                let maxX = Math.max(geometry.rotatedStartX, geometry.rotatedR1X, geometry.rotatedR2X, originX);
-                let minY = Math.min(geometry.rotatedStartY, geometry.rotatedR1Y, geometry.rotatedR2Y, originY);
-                let maxY = Math.max(geometry.rotatedStartY, geometry.rotatedR1Y, geometry.rotatedR2Y, originY);
-                
-                for (const circle of geometry.allCircles) {
-                    const radius = circle.category === 'C' ? 
-                        params.smallCircleDiameter2 / 2 : 
-                        params.qCircleDiameter / 2;
-                    
-                    minX = Math.min(minX, circle.x - radius);
-                    maxX = Math.max(maxX, circle.x + radius);
-                    minY = Math.min(minY, circle.y - radius);
-                    maxY = Math.max(maxY, circle.y + radius);
-                }
-                
-                const margin = 5;
-                minX -= margin;
-                maxX += margin;
-                minY -= margin;
-                maxY += margin;
-                
-                return { minX, maxX, minY, maxY };
-            }
-            
-            // 计算自适应缩放和居中
-            function calculateAutoScaleAndCenter(bounds, displayWidth, displayHeight) {
-                const { minX, maxX, minY, maxY } = bounds;
-                
-                const contentWidth = maxX - minX;
-                const contentHeight = maxY - minY;
-                const centerX = (minX + maxX) / 2;
-                const centerY = (minY + maxY) / 2;
-                
-                if (contentWidth <= 0 || contentHeight <= 0) {
-                    return {
-                        scale: 6,
-                        offsetX: -centerX,
-                        offsetY: -centerY
-                    };
-                }
-                
-                const scaleX = displayWidth / contentWidth;
-                const scaleY = displayHeight / contentHeight;
-                let scale = Math.min(scaleX, scaleY) * 0.85;
-                
-                scale = Math.max(1, Math.min(30, scale));
-                
-                const offsetX = -centerX;
-                const offsetY = -centerY;
-                
-                return { scale, offsetX, offsetY };
-            }
-            
-            // 绘制线条辅助函数
-            function drawLine(x1, y1, x2, y2, color, lineWidth, dashPattern) {
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.strokeStyle = color;
-                ctx.lineWidth = lineWidth;
-                
-                if (dashPattern) {
-                    ctx.setLineDash(dashPattern);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                } else {
-                    ctx.stroke();
-                }
-            }
-            
-            // 绘制圆形辅助函数
-            function drawCircle(x, y, radius, color, fill = false, stroke = false, lineWidth = 1) {
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                
-                if (fill) {
-                    ctx.fillStyle = color;
-                    ctx.fill();
-                }
-                
-                if (stroke) {
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = lineWidth;
-                    ctx.stroke();
-                }
-            }
-            
-            // 绘制函数
-            function draw() {
-                if (isDrawing) return;
-                
-                isDrawing = true;
-                
-                requestAnimationFrame(() => {
-                    try {
-                        if (canvas.width === 0 || canvas.height === 0) {
-                            resizeCanvas();
-                        }
-                        
-                        const geometry = calculateGeometry();
-                        const { bigCircleDiameter, smallCircleDiameter, smallCircleDiameter2, originX, originY, qCircleDiameter } = params;
-                        const parallelDistance = geometry.parallelDistance;
-                        
-                        const canvasWidth = canvas.width;
-                        const canvasHeight = canvas.height;
-                        const dpr = window.devicePixelRatio || 1;
-                        
-                        const displayWidth = canvasWidth / dpr;
-                        const displayHeight = canvasHeight / dpr;
-                        
-                        let bounds = calculateBounds();
-                        const autoScaleResult = calculateAutoScaleAndCenter(bounds, displayWidth, displayHeight);
-                        currentScale = autoScaleResult.scale;
-                        viewOffsetX = autoScaleResult.offsetX;
-                        viewOffsetY = autoScaleResult.offsetY;
-                        
-                        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-                        ctx.save();
-                        ctx.scale(dpr, dpr);
-                        ctx.translate(displayWidth / 2, displayHeight / 2);
-                        ctx.scale(currentScale, -currentScale);
-                        ctx.translate(viewOffsetX, viewOffsetY);
-                        
-                        // 绘制网格背景
-                        drawGrid(displayWidth, displayHeight);
-                        
-                        // 绘制坐标系
-                        drawCoordinateSystem();
-                        
-                        // 绘制旋转中心
-                        drawCircle(originX, originY, 3 / currentScale, '#000000', true, false);
-                        
-                        // 绘制从旋转中心到起点的参考线
-                        drawLine(originX, originY, geometry.rotatedStartX, geometry.rotatedStartY, 'rgba(0, 0, 0, 0.3)', 0.5 / currentScale);
-                        
-                        // 绘制中心线
-                        drawLine(geometry.rotatedR1X, geometry.rotatedR1Y, geometry.rotatedR2X, geometry.rotatedR2Y, '#40c057', 1 / currentScale, [5 / currentScale, 5 / currentScale]);
-                        
-                        // 绘制平行槽
-                        const parallelOffsetX = parallelDistance * geometry.vx;
-                        const parallelOffsetY = parallelDistance * geometry.vy;
-                        
-                        drawLine(
-                            geometry.rotatedR1X + parallelOffsetX, geometry.rotatedR1Y + parallelOffsetY,
-                            geometry.rotatedR2X + parallelOffsetX, geometry.rotatedR2Y + parallelOffsetY,
-                            '#ff922b', 0.5 / currentScale
-                        );
-                        
-                        drawLine(
-                            geometry.rotatedR1X - parallelOffsetX, geometry.rotatedR1Y - parallelOffsetY,
-                            geometry.rotatedR2X - parallelOffsetX, geometry.rotatedR2Y - parallelOffsetY,
-                            '#ff922b', 0.5 / currentScale
-                        );
-                        
-                        // 绘制大圆 R1
-                        drawCircle(geometry.rotatedR1X, geometry.rotatedR1Y, bigCircleDiameter/2, '#ff6b6b', false, true, 2 / currentScale);
-                        
-                        // 绘制小圆 R2
-                        drawCircle(geometry.rotatedR2X, geometry.rotatedR2Y, smallCircleDiameter/2, '#4dabf7', false, true, 2 / currentScale);
-                        
-                        // 绘制起点
-                        drawCircle(geometry.rotatedStartX, geometry.rotatedStartY, 3 / currentScale, '#2c3e50', true, false);
-                        
-                        // 绘制所有C槽和Q槽以及它们的连接线
-                        const circleColors = ['#7950f2', '#e64980', '#2ecc71', '#f39c12', '#1abc9c', '#9b59b6', '#34495e', '#e74c3c', '#3498db', '#2ecc71'];
-                        
-                        for (let i = 0; i < geometry.allCircles.length; i++) {
-                            const circle = geometry.allCircles[i];
-                            const radius = circle.category === 'C' ? 
-                                smallCircleDiameter2 / 2 : 
-                                qCircleDiameter / 2;
-                            
-                            const color = circle.category === 'C' ? 
-                                circleColors[circle.id % circleColors.length] : 
-                                '#ff9800';
-                            
-                            drawLine(originX, originY, circle.x, circle.y, 'rgba(0, 0, 0, 0.5)', 1 / currentScale);
-                            drawCircle(circle.x, circle.y, radius, color, false, true, 
-                                (circle.category === 'C' ? 1.5 : 2) / currentScale);
-                            drawCircle(circle.x, circle.y, 1.5 / currentScale, color, true, false);
-                        }
-                        
-                        // 绘制R1和R2圆心
-                        drawCircle(geometry.rotatedR1X, geometry.rotatedR1Y, 3 / currentScale, '#ff6b6b', true, false);
-                        drawCircle(geometry.rotatedR2X, geometry.rotatedR2Y, 3 / currentScale, '#4dabf7', true, false);
-                        
-                        ctx.restore();
-                        
-                        // 绘制文字标注
-                        drawLabels(displayWidth, displayHeight, geometry);
-                        
-                        // 更新状态栏
-                        updateStatusBar();
-                        
-                    } catch (error) {
-                        console.error('绘制错误:', error);
-                    } finally {
-                        isDrawing = false;
-                        loadingOverlay.classList.remove('active');
-                    }
+                    startAngle: circle.startAngle,
+                    targetAngle: circle.targetAngle,
+                    index: i + 1,
+                    name: circle.name,
+                    category: circle.category
                 });
             }
             
-            // 绘制标签
-            function drawLabels(displayWidth, displayHeight, geometry) {
-                const dpr = window.devicePixelRatio || 1;
+            return {
+                dx, dy, length, ux, uy, vx, vy, 
+                rotationAngle: centerLineRotation.rotationAngle,
+                absoluteAngle: centerLineRotation.absoluteAngle,
+                angleDirection: centerLineRotation.direction,
+                circles, 
+                parallelDistance: calculateHalfParallel(params.parallelDiameter),
+                connectionLines, allCircles, sortedCircles,
+                rotatedR1X, rotatedR1Y, rotatedR2X, rotatedR2Y, rotatedStartX, rotatedStartY
+            };
+        }
+        
+        function calculateBounds() {
+            const geometry = calculateGeometry();
+            const { startX, startY, r1X, r1Y, r2X, r2Y, originX, originY } = params;
+            
+            const rotatedR1X = geometry.rotatedR1X;
+            const rotatedR1Y = geometry.rotatedR1Y;
+            const rotatedR2X = geometry.rotatedR2X;
+            const rotatedR2Y = geometry.rotatedR2Y;
+            const rotatedStartX = geometry.rotatedStartX;
+            const rotatedStartY = geometry.rotatedStartY;
+            
+            let minX = Math.min(rotatedStartX, rotatedR1X, rotatedR2X, originX);
+            let maxX = Math.max(rotatedStartX, rotatedR1X, rotatedR2X, originX);
+            let minY = Math.min(rotatedStartY, rotatedR1Y, rotatedR2Y, originY);
+            let maxY = Math.max(rotatedStartY, rotatedR1Y, rotatedR2Y, originY);
+            
+            for (const circle of geometry.allCircles) {
+                const radius = circle.category === 'C' ? 
+                    params.smallCircleDiameter2 / 2 : 
+                    params.qCircleDiameter / 2;
                 
-                ctx.save();
-                ctx.scale(dpr, dpr);
-                
-                ctx.fillStyle = '#000000';
-                ctx.font = `bold ${Math.max(12, 14)}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                const worldToScreen = (worldX, worldY) => {
-                    const screenX = displayWidth/2 + (worldX + viewOffsetX) * currentScale;
-                    const screenY = displayHeight/2 - (worldY + viewOffsetY) * currentScale;
-                    return { x: screenX, y: screenY };
+                minX = Math.min(minX, circle.x - radius);
+                maxX = Math.max(maxX, circle.x + radius);
+                minY = Math.min(minY, circle.y - radius);
+                maxY = Math.max(maxY, circle.y + radius);
+            }
+            
+            const margin = 5;
+            minX -= margin;
+            maxX += margin;
+            minY -= margin;
+            maxY += margin;
+            
+            return { minX, maxX, minY, maxY };
+        }
+        
+        function calculateAutoScaleAndCenter(bounds, displayWidth, displayHeight) {
+            const { minX, maxX, minY, maxY } = bounds;
+            
+            const contentWidth = maxX - minX;
+            const contentHeight = maxY - minY;
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
+            
+            if (contentWidth <= 0 || contentHeight <= 0) {
+                return {
+                    scale: 6,
+                    offsetX: -centerX,
+                    offsetY: -centerY
                 };
-                
-                const originScreen = worldToScreen(params.originX, params.originY);
-                ctx.fillText('旋转中心', originScreen.x, originScreen.y + 20);
-                
-                const startScreen = worldToScreen(geometry.rotatedStartX, geometry.rotatedStartY);
-                ctx.fillText('起点', startScreen.x, startScreen.y + 20);
-                
-                const r1Screen = worldToScreen(geometry.rotatedR1X, geometry.rotatedR1Y);
-                ctx.fillStyle = '#ff6b6b';
-                ctx.fillText('R1', r1Screen.x, r1Screen.y - params.bigCircleDiameter/2 * currentScale - 15);
-                
-                const r2Screen = worldToScreen(geometry.rotatedR2X, geometry.rotatedR2Y);
-                ctx.fillStyle = '#4dabf7';
-                ctx.fillText('R2', r2Screen.x, r2Screen.y - params.smallCircleDiameter/2 * currentScale - 15);
-                
-                const circleColors = ['#7950f2', '#e64980', '#2ecc71', '#f39c12', '#1abc9c', '#9b59b6', '#34495e', '#e74c3c', '#3498db', '#2ecc71'];
-                
-                for (let i = 0; i < geometry.allCircles.length; i++) {
-                    const circle = geometry.allCircles[i];
-                    const radius = circle.category === 'C' ? 
-                        params.smallCircleDiameter2 / 2 : 
-                        params.qCircleDiameter / 2;
-                    
-                    const color = circle.category === 'C' ? 
-                        circleColors[circle.id % circleColors.length] : 
-                        '#ff9800';
-                    
-                    const circleScreen = worldToScreen(circle.x, circle.y);
-                    ctx.fillStyle = color;
-                    ctx.font = `bold ${Math.max(10, 12)}px Arial`;
-                    
-                    let labelText = circle.name;
-                    if (circle.category === 'C') {
-                        if (circle.positionType === 'incremental') {
-                            labelText += ` (Δ${circle.originalMove.toFixed(2)},${circle.originalOffset.toFixed(2)})`;
-                        }
-                        labelText += `\n${circle.rotationAngle.toFixed(1)}°`;
-                    } else {
-                        labelText += `\n${circle.rotationAngle.toFixed(1)}°`;
-                    }
-                    
-                    const labelY = circleScreen.y + radius * currentScale + 20;
-                    ctx.fillText(labelText, circleScreen.x, labelY);
-                }
-                
-                ctx.restore();
             }
             
-            // 绘制网格
-            function drawGrid(displayWidth, displayHeight) {
-                const gridSize = 50;
-                
-                ctx.strokeStyle = 'var(--grid-color)';
-                ctx.lineWidth = 0.5 / currentScale;
-                
-                const visibleLeft = -displayWidth/2 / currentScale - viewOffsetX;
-                const visibleRight = displayWidth/2 / currentScale - viewOffsetX;
-                const visibleBottom = -displayHeight/2 / currentScale - viewOffsetY;
-                const visibleTop = displayHeight/2 / currentScale - viewOffsetY;
-                
-                const startX = Math.floor(visibleLeft / gridSize) * gridSize;
-                const endX = Math.ceil(visibleRight / gridSize) * gridSize;
-                
-                for (let x = startX; x <= endX; x += gridSize) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, visibleBottom);
-                    ctx.lineTo(x, visibleTop);
-                    ctx.stroke();
-                }
-                
-                const startY = Math.floor(visibleBottom / gridSize) * gridSize;
-                const endY = Math.ceil(visibleTop / gridSize) * gridSize;
-                
-                for (let y = startY; y <= endY; y += gridSize) {
-                    ctx.beginPath();
-                    ctx.moveTo(visibleLeft, y);
-                    ctx.lineTo(visibleRight, y);
-                    ctx.stroke();
-                }
-            }
+            const scaleX = displayWidth / contentWidth;
+            const scaleY = displayHeight / contentHeight;
+            let scale = Math.min(scaleX, scaleY) * 0.85;
             
-            // 绘制坐标系
-            function drawCoordinateSystem() {
-                ctx.beginPath();
-                ctx.moveTo(-10000, 0);
-                ctx.lineTo(10000, 0);
-                ctx.strokeStyle = 'var(--axis-color)';
-                ctx.lineWidth = 1.5 / currentScale;
+            scale = Math.max(1, Math.min(30, scale));
+            
+            const offsetX = -centerX;
+            const offsetY = -centerY;
+            
+            return { scale, offsetX, offsetY };
+        }
+        
+        function drawLine(x1, y1, x2, y2, color, lineWidth, dashPattern) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            
+            if (dashPattern) {
+                ctx.setLineDash(dashPattern);
                 ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.moveTo(0, -10000);
-                ctx.lineTo(0, 10000);
-                ctx.strokeStyle = 'var(--axis-color)';
-                ctx.lineWidth = 1.5 / currentScale;
+                ctx.setLineDash([]);
+            } else {
                 ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.arc(0, 0, 3 / currentScale, 0, Math.PI * 2);
-                ctx.fillStyle = 'var(--axis-color)';
+            }
+        }
+        
+        function drawCircle(x, y, radius, color, fill = false, stroke = false, lineWidth = 1) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            
+            if (fill) {
+                ctx.fillStyle = color;
                 ctx.fill();
             }
             
-            // 更新数据显示
-            function updateDataDisplay() {
-                const geometry = calculateGeometry();
-                const { r1X, r1Y, r2X, r2Y, startX, startY, originX, originY } = params;
-                
-                const rotationRadiusValue = calculateDistance(originX, originY, startX, startY);
-                
-                originCoord.textContent = `(${roundToTwoDecimals(originX).toFixed(2)}, ${roundToTwoDecimals(originY).toFixed(2)})`;
-                startCoord.textContent = `(${roundToTwoDecimals(startX).toFixed(2)}, ${roundToTwoDecimals(startY).toFixed(2)})`;
-                r1Coord.textContent = `(${roundToTwoDecimals(r1X).toFixed(2)}, ${roundToTwoDecimals(r1Y).toFixed(2)})`;
-                r2Coord.textContent = `(${roundToTwoDecimals(r2X).toFixed(2)}, ${roundToTwoDecimals(r2Y).toFixed(2)})`;
-                
-                rotationRadius.textContent = roundToTwoDecimals(rotationRadiusValue).toFixed(2);
-                centerLength.textContent = roundToTwoDecimals(geometry.length).toFixed(2);
-                centerAngle.textContent = `${roundToTwoDecimals(geometry.rotationAngle).toFixed(2)}° (${geometry.angleDirection})`;
-                
-                circleCount.textContent = cCircles.length;
-                qCircleCountDisplay.textContent = qCircles.length;
-                
-                let rotationDisplayText = `${graphRotation}°`;
-                if (graphRotation !== 0) {
-                    rotationDisplayText += ` (已旋转)`;
-                }
-                graphRotationDisplay.textContent = rotationDisplayText;
-                
-                if (qCircles.length > 0) {
-                    connectionTitle.textContent = `旋转加工数据 (${cCircles.length}个C槽 + ${qCircles.length}个Q槽)${reverseOrder ? ' [反转]' : ''}${graphRotation !== 0 ? ` [图形旋转${graphRotation}°]` : ''}`;
-                } else {
-                    connectionTitle.textContent = `旋转加工数据 (${cCircles.length}个C槽)${reverseOrder ? ' [反转]' : ''}${graphRotation !== 0 ? ` [图形旋转${graphRotation}°]` : ''}`;
-                }
-                
-                connectionTableBody.innerHTML = '';
-                
-                for (let i = 0; i < geometry.connectionLines.length; i++) {
-                    const line = geometry.connectionLines[i];
+            if (stroke) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+        }
+        
+        function draw() {
+            if (isDrawing) return;
+            
+            isDrawing = true;
+            
+            requestAnimationFrame(() => {
+                try {
+                    if (canvas.width === 0 || canvas.height === 0) {
+                        resizeCanvas();
+                    }
                     
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>#${line.index}</td>
-                        <td>${line.name} (${line.category})</td>
-                        <td class="connection-line angle">${roundToTwoDecimals(line.rotationAngle).toFixed(1)}°</td>
-                        <td class="connection-line length">${roundToTwoDecimals(line.radius).toFixed(2)}</td>
-                        <td>${line.direction}</td>
-                    `;
-                    connectionTableBody.appendChild(row);
+                    const geometry = calculateGeometry();
+                    const { r1X, r1Y, r2X, r2Y, bigCircleDiameter, smallCircleDiameter, smallCircleDiameter2, startX, startY, originX, originY, qCircleDiameter } = params;
+                    const parallelDistance = geometry.parallelDistance;
+                    
+                    const canvasWidth = canvas.width;
+                    const canvasHeight = canvas.height;
+                    const dpr = window.devicePixelRatio || 1;
+                    
+                    const displayWidth = canvasWidth / dpr;
+                    const displayHeight = canvasHeight / dpr;
+                    
+                    let bounds = calculateBounds();
+                    const autoScaleResult = calculateAutoScaleAndCenter(bounds, displayWidth, displayHeight);
+                    currentScale = autoScaleResult.scale;
+                    viewOffsetX = autoScaleResult.offsetX;
+                    viewOffsetY = autoScaleResult.offsetY;
+                    
+                    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                    ctx.save();
+                    ctx.scale(dpr, dpr);
+                    ctx.translate(displayWidth / 2, displayHeight / 2);
+                    ctx.scale(currentScale, -currentScale);
+                    ctx.translate(viewOffsetX, viewOffsetY);
+                    
+                    drawGrid(displayWidth, displayHeight);
+                    drawCoordinateSystem();
+                    
+                    drawCircle(originX, originY, 3 / currentScale, '#000000', true, false);
+                    drawLine(originX, originY, geometry.rotatedStartX, geometry.rotatedStartY, 'rgba(0, 0, 0, 0.3)', 0.5 / currentScale);
+                    drawLine(geometry.rotatedR1X, geometry.rotatedR1Y, geometry.rotatedR2X, geometry.rotatedR2Y, '#40c057', 1 / currentScale, [5 / currentScale, 5 / currentScale]);
+                    
+                    const parallelOffsetX = parallelDistance * geometry.vx;
+                    const parallelOffsetY = parallelDistance * geometry.vy;
+                    
+                    drawLine(
+                        geometry.rotatedR1X + parallelOffsetX, geometry.rotatedR1Y + parallelOffsetY,
+                        geometry.rotatedR2X + parallelOffsetX, geometry.rotatedR2Y + parallelOffsetY,
+                        '#ff922b', 0.5 / currentScale
+                    );
+                    
+                    drawLine(
+                        geometry.rotatedR1X - parallelOffsetX, geometry.rotatedR1Y - parallelOffsetY,
+                        geometry.rotatedR2X - parallelOffsetX, geometry.rotatedR2Y - parallelOffsetY,
+                        '#ff922b', 0.5 / currentScale
+                    );
+                    
+                    drawCircle(geometry.rotatedR1X, geometry.rotatedR1Y, bigCircleDiameter/2, '#ff6b6b', false, true, 2 / currentScale);
+                    drawCircle(geometry.rotatedR2X, geometry.rotatedR2Y, smallCircleDiameter/2, '#4dabf7', false, true, 2 / currentScale);
+                    drawCircle(geometry.rotatedStartX, geometry.rotatedStartY, 3 / currentScale, '#2c3e50', true, false);
+                    
+                    const circleColors = ['#7950f2', '#e64980', '#2ecc71', '#f39c12', '#1abc9c', '#9b59b6', '#34495e', '#e74c3c', '#3498db', '#2ecc71'];
+                    
+                    for (let i = 0; i < geometry.allCircles.length; i++) {
+                        const circle = geometry.allCircles[i];
+                        const radius = circle.category === 'C' ? 
+                            smallCircleDiameter2 / 2 : 
+                            qCircleDiameter / 2;
+                        
+                        const color = circle.category === 'C' ? 
+                            circleColors[circle.id % circleColors.length] : 
+                            '#ff9800';
+                        
+                        drawLine(originX, originY, circle.x, circle.y, 'rgba(0, 0, 0, 0.5)', 1 / currentScale);
+                        drawCircle(circle.x, circle.y, radius, color, false, true, 
+                            (circle.category === 'C' ? 1.5 : 2) / currentScale);
+                        drawCircle(circle.x, circle.y, 1.5 / currentScale, color, true, false);
+                    }
+                    
+                    drawCircle(geometry.rotatedR1X, geometry.rotatedR1Y, 3 / currentScale, '#ff6b6b', true, false);
+                    drawCircle(geometry.rotatedR2X, geometry.rotatedR2Y, 3 / currentScale, '#4dabf7', true, false);
+                    
+                    ctx.restore();
+                    
+                    drawLabels(displayWidth, displayHeight, geometry);
+                    updateStatusBar();
+                    
+                } catch (error) {
+                    console.error('绘制错误:', error);
+                } finally {
+                    isDrawing = false;
+                    loadingOverlay.classList.remove('active');
                 }
-                
-                updateParallelHalfDisplay();
-                generateCNCPrograms();
+            });
+        }
+        
+        function drawLabels(displayWidth, displayHeight, geometry) {
+            const dpr = window.devicePixelRatio || 1;
+            
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.font = 'bold 13px Arial';
+            
+            const worldToScreen = (worldX, worldY) => {
+                const screenX = displayWidth/2 + (worldX + viewOffsetX) * currentScale;
+                const screenY = displayHeight/2 - (worldY + viewOffsetY) * currentScale;
+                return { x: screenX, y: screenY };
+            };
+            
+            // 存储已标注的位置，避免重叠
+            const labelPositions = [];
+            
+            function isOverlapping(x, y, width, height) {
+                return labelPositions.some(pos => {
+                    return !(x + width < pos.x || x > pos.x + pos.width || y + height < pos.y || y > pos.y + pos.height);
+                });
             }
             
-            // 生成CNC加工程序 - 直径编程，考虑图形旋转（起点不旋转），X值符号根据起点Y值决定
-            function generateCNCPrograms() {
-                const geometry = calculateGeometry();
-                const cuttingDepth = parseFloat(cuttingDepthInput.value) || 0;
-                const feedRate = parseFloat(feedRateInput.value) || 0;
+            function addLabel(worldX, worldY, text, color) {
+                const screenPos = worldToScreen(worldX, worldY);
                 
-                if (geometry.allCircles.length < 2) {
-                    programOutput1.textContent = "无法生成程序：需要至少两个槽";
-                    programOutput2.textContent = "无法生成程序：需要至少两个槽";
-                    return;
-                }
+                // 测量文字大小
+                const textMetrics = ctx.measureText(text);
+                const textWidth = textMetrics.width;
+                const textHeight = 16;
+                const padding = 6;
                 
-                // 获取起点Y值，判断X值符号
-                // Y值为正时，X值为负数；Y值为负时，X值为正数
-                const xSign = params.startY >= 0 ? -1 : 1;
+                const totalWidth = textWidth + padding * 2;
+                const totalHeight = textHeight + padding * 2;
                 
-                // 获取下排和上排的C槽
-                const cCircleDown = [];
-                const cCircleUp = [];
+                // 尝试多个偏移方向
+                const offsets = [
+                    { x: 15, y: -15 },
+                    { x: 15, y: 15 },
+                    { x: -15, y: -15 },
+                    { x: -15, y: 15 },
+                    { x: 20, y: 0 },
+                    { x: -20, y: 0 },
+                    { x: 0, y: -20 },
+                    { x: 0, y: 20 },
+                    { x: 25, y: -25 },
+                    { x: -25, y: 25 },
+                    { x: 25, y: 25 },
+                    { x: -25, y: -25 }
+                ];
                 
-                for (const circle of geometry.allCircles) {
-                    if (circle.category === 'C') {
-                        if (circle.name.includes('下')) {
-                            cCircleDown.push(circle);
-                        } else if (circle.name.includes('上')) {
-                            cCircleUp.push(circle);
-                        }
+                let bestX = screenPos.x + 15;
+                let bestY = screenPos.y - 15;
+                
+                for (const offset of offsets) {
+                    const testX = screenPos.x + offset.x;
+                    const testY = screenPos.y + offset.y - totalHeight / 2;
+                    
+                    if (testX < 5 || testX + totalWidth > displayWidth - 5 || 
+                        testY < 5 || testY + totalHeight > displayHeight - 5) {
+                        continue;
+                    }
+                    
+                    if (!isOverlapping(testX, testY, totalWidth, totalHeight)) {
+                        bestX = testX;
+                        bestY = testY;
+                        break;
                     }
                 }
                 
-                cCircleDown.sort((a, b) => a.id - b.id);
-                cCircleUp.sort((a, b) => a.id - b.id);
+                // 绘制引线
+                ctx.strokeStyle = 'rgba(100, 100, 100, 0.4)';
+                ctx.lineWidth = 0.5;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(screenPos.x, screenPos.y);
+                ctx.lineTo(bestX + totalWidth / 2, bestY + totalHeight / 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
                 
-                const roundedCuttingDepth = roundToTwoDecimals(cuttingDepth);
+                // 绘制透明文字
+                ctx.fillStyle = color;
+                ctx.fillText(text, bestX + padding, bestY + totalHeight / 2);
                 
-                let baseProgram = `$1
+                labelPositions.push({ x: bestX, y: bestY, width: totalWidth, height: totalHeight });
+            }
+            
+            // 标注旋转中心
+            addLabel(params.originX, params.originY, 
+                `旋转中心 (${roundToTwoDecimals(params.originX).toFixed(2)}, ${roundToTwoDecimals(params.originY).toFixed(2)})`, 
+                '#000000');
+            
+            // 标注起点
+            addLabel(geometry.rotatedStartX, geometry.rotatedStartY, 
+                `起点 (${roundToTwoDecimals(geometry.rotatedStartX).toFixed(2)}, ${roundToTwoDecimals(geometry.rotatedStartY).toFixed(2)})`, 
+                '#2c3e50');
+            
+            // 标注C槽和Q槽，格式为C1-下 (6.30,3.20)
+            const circleColors = ['#7950f2', '#e64980', '#2ecc71', '#f39c12', '#1abc9c', '#9b59b6', '#34495e', '#e74c3c', '#3498db', '#2ecc71'];
+            
+            for (let i = 0; i < geometry.allCircles.length; i++) {
+                const circle = geometry.allCircles[i];
+                const color = circle.category === 'C' ? 
+                    circleColors[circle.id % circleColors.length] : 
+                    '#ff9800';
+                
+                // 格式：C1-下 (6.30,3.20)
+                let labelText = `${circle.name} (${roundToTwoDecimals(circle.originalMove || circle.xOffset || 0).toFixed(2)},${roundToTwoDecimals(circle.originalOffset || circle.yOffset || 0).toFixed(2)})`;
+                
+                addLabel(circle.x, circle.y, labelText, color);
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawGrid(displayWidth, displayHeight) {
+            const gridSize = 50;
+            
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5 / currentScale;
+            
+            const visibleLeft = -displayWidth/2 / currentScale - viewOffsetX;
+            const visibleRight = displayWidth/2 / currentScale - viewOffsetX;
+            const visibleBottom = -displayHeight/2 / currentScale - viewOffsetY;
+            const visibleTop = displayHeight/2 / currentScale - viewOffsetY;
+            
+            const startX = Math.floor(visibleLeft / gridSize) * gridSize;
+            const endX = Math.ceil(visibleRight / gridSize) * gridSize;
+            
+            for (let x = startX; x <= endX; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, visibleBottom);
+                ctx.lineTo(x, visibleTop);
+                ctx.stroke();
+            }
+            
+            const startY = Math.floor(visibleBottom / gridSize) * gridSize;
+            const endY = Math.ceil(visibleTop / gridSize) * gridSize;
+            
+            for (let y = startY; y <= endY; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(visibleLeft, y);
+                ctx.lineTo(visibleRight, y);
+                ctx.stroke();
+            }
+        }
+        
+        function drawCoordinateSystem() {
+            ctx.beginPath();
+            ctx.moveTo(-10000, 0);
+            ctx.lineTo(10000, 0);
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 1.5 / currentScale;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(0, -10000);
+            ctx.lineTo(0, 10000);
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 1.5 / currentScale;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(0, 0, 3 / currentScale, 0, Math.PI * 2);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fill();
+        }
+        
+        function updateDataDisplay() {
+            const geometry = calculateGeometry();
+            const { r1X, r1Y, r2X, r2Y, startX, startY, originX, originY } = params;
+            
+            const rotationRadiusValue = calculateDistance(originX, originY, startX, startY);
+            
+            originCoord.textContent = `(${roundToTwoDecimals(originX).toFixed(2)}, ${roundToTwoDecimals(originY).toFixed(2)})`;
+            startCoord.textContent = `(${roundToTwoDecimals(startX).toFixed(2)}, ${roundToTwoDecimals(startY).toFixed(2)})`;
+            r1Coord.textContent = `(${roundToTwoDecimals(r1X).toFixed(2)}, ${roundToTwoDecimals(r1Y).toFixed(2)})`;
+            r2Coord.textContent = `(${roundToTwoDecimals(r2X).toFixed(2)}, ${roundToTwoDecimals(r2Y).toFixed(2)})`;
+            
+            rotationRadius.textContent = roundToTwoDecimals(rotationRadiusValue).toFixed(2);
+            centerLength.textContent = roundToTwoDecimals(geometry.length).toFixed(2);
+            centerAngle.textContent = `${roundToTwoDecimals(geometry.rotationAngle).toFixed(2)}° (${geometry.angleDirection})`;
+            
+            circleCount.textContent = cCircles.length;
+            qCircleCountDisplay.textContent = qCircles.length;
+            
+            let rotationDisplayText = `${graphRotation}°`;
+            if (graphRotation !== 0) {
+                rotationDisplayText += ` (已旋转)`;
+            }
+            graphRotationDisplay.textContent = rotationDisplayText;
+            
+            if (qCircles.length > 0) {
+                connectionTitle.textContent = `旋转加工数据 (${cCircles.length}个C槽 + ${qCircles.length}个Q槽)${reverseOrder ? ' [反转]' : ''}${graphRotation !== 0 ? ` [图形旋转${graphRotation}°]` : ''}`;
+            } else {
+                connectionTitle.textContent = `旋转加工数据 (${cCircles.length}个C槽)${reverseOrder ? ' [反转]' : ''}${graphRotation !== 0 ? ` [图形旋转${graphRotation}°]` : ''}`;
+            }
+            
+            connectionTableBody.innerHTML = '';
+            
+            for (let i = 0; i < geometry.connectionLines.length; i++) {
+                const line = geometry.connectionLines[i];
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>#${line.index}</td>
+                    <td>${line.name} (${line.category})</td>
+                    <td class="connection-line angle">${roundToTwoDecimals(line.rotationAngle).toFixed(1)}°</td>
+                    <td class="connection-line length">${roundToTwoDecimals(line.radius).toFixed(2)}</td>
+                    <td>${line.direction}</td>
+                `;
+                connectionTableBody.appendChild(row);
+            }
+            
+            updateParallelHalfDisplay();
+            generateCNCPrograms();
+        }
+        
+        function generateCNCPrograms() {
+            const geometry = calculateGeometry();
+            const cuttingDepth = parseFloat(cuttingDepthInput.value) || 0;
+            const feedRate = parseFloat(feedRateInput.value) || 0;
+            
+            if (geometry.allCircles.length < 2) {
+                programOutput1.textContent = "无法生成程序：需要至少两个槽";
+                programOutput2.textContent = "无法生成程序：需要至少两个槽";
+                return;
+            }
+            
+            const cCircleDown = [];
+            const cCircleUp = [];
+            
+            for (const circle of geometry.allCircles) {
+                if (circle.category === 'C') {
+                    if (circle.name.includes('下')) {
+                        cCircleDown.push(circle);
+                    } else if (circle.name.includes('上')) {
+                        cCircleUp.push(circle);
+                    }
+                }
+            }
+            
+            cCircleDown.sort((a, b) => a.id - b.id);
+            cCircleUp.sort((a, b) => a.id - b.id);
+            
+            const roundedCuttingDepth = roundToTwoDecimals(cuttingDepth);
+            
+            let baseProgram = `$1
 T0
 G98
 G00Z50.0`;
-                
-                // 处理下排C槽
-                if (cCircleDown.length > 0) {
-                    const c1Down = cCircleDown.find(c => c.id === 1);
-                    if (c1Down) {
-                        const diameterValue = roundToTwoDecimals(c1Down.radius * 2);
-                        const signedDiameter = diameterValue * xSign;
-                        
-                        baseProgram += `
-X${signedDiameter.toFixed(2)}C${roundToTwoDecimals(c1Down.rotationAngle).toFixed(2)}
+            
+            if (cCircleDown.length > 0) {
+                const c1Down = cCircleDown.find(c => c.id === 1);
+                if (c1Down) {
+                    const diameterValue = roundToTwoDecimals(c1Down.radius * 2);
+                    
+                    baseProgram += `
+X${diameterValue.toFixed(2)}C${roundToTwoDecimals(c1Down.rotationAngle).toFixed(2)}
 Z2.0
 G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
 G04X0.3
 G0Z2.0`;
-                    }
-                    
-                    if (cCircleDown.length > 1) {
-                        const c2Down = cCircleDown.find(c => c.id === 2);
-                        const c1DownRef = cCircleDown.find(c => c.id === 1);
-                        if (c2Down && c1DownRef) {
-                            const deltaRadius = roundToTwoDecimals((c2Down.radius - c1DownRef.radius) * 2);
-                            const deltaAngle = roundToTwoDecimals(c2Down.rotationAngle - c1DownRef.rotationAngle);
-                            
-                            baseProgram += `
+                }
+                
+                if (cCircleDown.length > 1) {
+                    const c2Down = cCircleDown.find(c => c.id === 2);
+                    const c1DownRef = cCircleDown.find(c => c.id === 1);
+                    if (c2Down && c1DownRef) {
+                        const deltaRadius = roundToTwoDecimals((c2Down.radius - c1DownRef.radius) * 2);
+                        const deltaAngle = roundToTwoDecimals(c2Down.rotationAngle - c1DownRef.rotationAngle);
+                        
+                        baseProgram += `
 U${deltaRadius.toFixed(2)}H${deltaAngle.toFixed(2)}
 Z2.0
 G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
 G04X0.3
 G0Z2.0`;
-                        }
                     }
                 }
-                
-                // 处理上排C槽
-                if (cCircleUp.length > 0) {
-                    const c1Up = cCircleUp.find(c => c.id === 1);
-                    if (c1Up) {
-                        const diameterValue = roundToTwoDecimals(c1Up.radius * 2);
-                        const signedDiameter = diameterValue * xSign;
-                        
-                        baseProgram += `
-X${signedDiameter.toFixed(2)}C${roundToTwoDecimals(c1Up.rotationAngle).toFixed(2)}
+            }
+            
+            if (cCircleUp.length > 0) {
+                const c1Up = cCircleUp.find(c => c.id === 1);
+                if (c1Up) {
+                    const diameterValue = roundToTwoDecimals(c1Up.radius * 2);
+                    
+                    baseProgram += `
+X${diameterValue.toFixed(2)}C${roundToTwoDecimals(c1Up.rotationAngle).toFixed(2)}
 Z2.0
 G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
 G04X0.3
 G0Z2.0`;
-                    }
-                    
-                    if (cCircleUp.length > 1) {
-                        const c2Up = cCircleUp.find(c => c.id === 2);
-                        const c1UpRef = cCircleUp.find(c => c.id === 1);
-                        if (c2Up && c1UpRef) {
-                            const deltaRadius = roundToTwoDecimals((c2Up.radius - c1UpRef.radius) * 2);
-                            const deltaAngle = roundToTwoDecimals(c2Up.rotationAngle - c1UpRef.rotationAngle);
-                            
-                            baseProgram += `
+                }
+                
+                if (cCircleUp.length > 1) {
+                    const c2Up = cCircleUp.find(c => c.id === 2);
+                    const c1UpRef = cCircleUp.find(c => c.id === 1);
+                    if (c2Up && c1UpRef) {
+                        const deltaRadius = roundToTwoDecimals((c2Up.radius - c1UpRef.radius) * 2);
+                        const deltaAngle = roundToTwoDecimals(c2Up.rotationAngle - c1UpRef.rotationAngle);
+                        
+                        baseProgram += `
 U${deltaRadius.toFixed(2)}H${deltaAngle.toFixed(2)}
 Z2.0
 G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
 G04X0.3
 G0Z2.0`;
-                        }
                     }
                 }
-                
-                // 处理Q槽 - 使用绝对坐标，直径编程
-                for (const circle of geometry.allCircles) {
-                    if (circle.category === 'Q') {
-                        const diameterValue = roundToTwoDecimals(circle.radius * 2);
-                        const signedDiameter = diameterValue * xSign;
-                        
-                        baseProgram += `
-X${signedDiameter.toFixed(2)}C${roundToTwoDecimals(circle.rotationAngle).toFixed(2)}
+            }
+            
+            for (const circle of geometry.allCircles) {
+                if (circle.category === 'Q') {
+                    const diameterValue = roundToTwoDecimals(circle.radius * 2);
+                    
+                    baseProgram += `
+X${diameterValue.toFixed(2)}C${roundToTwoDecimals(circle.rotationAngle).toFixed(2)}
 Z2.0
 G01Z-${roundedCuttingDepth.toFixed(2)}F${feedRate.toFixed(0)}
 G04X0.3
 G0Z2.0`;
-                    }
                 }
-                
-                baseProgram += `
+            }
+            
+            baseProgram += `
 G0Z50.0`;
-                
-                const program1 = baseProgram;
-                const program2 = baseProgram + `
+            
+            const program1 = baseProgram;
+            const program2 = baseProgram + `
 $2`;
-                
-                programOutput1.textContent = program1;
-                programOutput2.textContent = program2;
+            
+            programOutput1.textContent = program1;
+            programOutput2.textContent = program2;
+        }
+        
+        function applyRotation() {
+            const rotationType = rotationAngleSelect.value;
+            let angle = 0;
+            
+            if (rotationType === 'custom') {
+                angle = parseFloat(customAngleValue.value) || 0;
+            } else {
+                angle = parseInt(rotationType) || 0;
             }
             
-            // 应用图形旋转（起点不旋转）
-            function applyRotation() {
-                const rotationType = rotationAngleSelect.value;
-                let angle = 0;
+            graphRotation = angle;
+            updateStatusBar();
+            updateDataDisplay();
+            draw();
+        }
+        
+        function reverseConnectionOrder() {
+            reverseOrder = !reverseOrder;
+            reverseBtn.innerHTML = reverseOrder ? '↩️ 恢复正常顺序' : '🔄 反转加工顺序';
+            reverseBtn.classList.toggle('active', reverseOrder);
+            
+            updateDataDisplay();
+            draw();
+        }
+        
+        function updateStatusBar() {
+            const zoomPercent = Math.round((currentScale / 6) * 100);
+            let rotationText = graphRotation !== 0 ? ` | 图形旋转: ${graphRotation}° (起点固定)` : '';
+            statusBar.textContent = `缩放: ${zoomPercent}% | 坐标系: Y轴向上为正${rotationText}${reverseOrder ? ' | 加工顺序已反转' : ''}`;
+        }
+        
+        function renderCCircleList() {
+            cCircleList.innerHTML = '';
+            
+            for (const cCircle of cCircles) {
+                const item = document.createElement('div');
+                item.className = 'c-circle-item';
                 
-                if (rotationType === 'custom') {
-                    angle = parseFloat(customAngleValue.value) || 0;
+                let positionTypeOptions = '';
+                if (cCircle.id === 1) {
+                    positionTypeOptions = `
+                        <option value="absolute" selected>绝对位置</option>
+                        <option value="incremental" disabled>增量位置（不可选）</option>
+                    `;
                 } else {
-                    angle = parseInt(rotationType) || 0;
-                }
-                
-                graphRotation = angle;
-                
-                updateStatusBar();
-                updateDataDisplay();
-                draw();
-            }
-            
-            // 反转加工顺序
-            function reverseConnectionOrder() {
-                reverseOrder = !reverseOrder;
-                reverseBtn.innerHTML = reverseOrder ? '↩️ 恢复正常顺序' : '🔄 反转加工顺序';
-                reverseBtn.classList.toggle('active', reverseOrder);
-                
-                updateDataDisplay();
-                draw();
-            }
-            
-            // 更新状态栏
-            function updateStatusBar() {
-                const zoomPercent = Math.round((currentScale / 6) * 100);
-                let rotationText = graphRotation !== 0 ? ` | 图形旋转: ${graphRotation}° (起点固定)` : '';
-                statusBar.textContent = `缩放: ${zoomPercent}% | 坐标系: Y轴向上为正${rotationText}${reverseOrder ? ' | 加工顺序已反转' : ''}`;
-            }
-            
-            // 渲染C槽列表
-            function renderCCircleList() {
-                cCircleList.innerHTML = '';
-                
-                for (const cCircle of cCircles) {
-                    const item = document.createElement('div');
-                    item.className = 'c-circle-item';
+                    const isAbsolute = cCircle.type === 'absolute';
+                    const isIncremental = cCircle.type === 'incremental';
                     
-                    let positionTypeOptions = '';
-                    if (cCircle.id === 1) {
-                        positionTypeOptions = `
-                            <option value="absolute" selected>绝对位置</option>
-                            <option value="incremental" disabled>增量位置（不可选）</option>
-                        `;
-                    } else {
-                        const isAbsolute = cCircle.type === 'absolute';
-                        const isIncremental = cCircle.type === 'incremental';
-                        
-                        positionTypeOptions = `
-                            <option value="absolute" ${isAbsolute ? 'selected' : ''}>绝对位置</option>
-                            <option value="incremental" ${isIncremental ? 'selected' : ''}>增量位置</option>
-                        `;
-                    }
-                    
-                    let baseCircleOptions = '<option value="">-- 选择参考槽 --</option>';
-                    for (const baseCircle of cCircles) {
-                        if (baseCircle.id < cCircle.id) {
-                            baseCircleOptions += `<option value="${baseCircle.id}" ${cCircle.baseCircleId === baseCircle.id ? 'selected' : ''}>${baseCircle.name}</option>`;
-                        }
-                    }
-                    
-                    const baseCircleDisplay = cCircle.type === 'incremental' ? 'block' : 'none';
-                    
-                    item.innerHTML = `
-                        <div class="c-circle-header">
-                            <div class="c-circle-title">${cCircle.name}</div>
-                            <button class="remove-circle-btn" data-id="${cCircle.id}">删除</button>
-                        </div>
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label for="positionType${cCircle.id}">位置类型：</label>
-                                <select id="positionType${cCircle.id}" class="position-type-input">
-                                    ${positionTypeOptions}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label for="moveDistance${cCircle.id}">平移距离：</label>
-                                <input type="number" id="moveDistance${cCircle.id}" value="${roundToTwoDecimals(cCircle.moveDistance).toFixed(2)}" step="0.1" class="circle-input">
-                                <div class="info-text" id="moveDistanceHelp${cCircle.id}" style="font-size: 10px;">
-                                    ${cCircle.type === 'incremental' ? '相对于参考槽的增量距离' : '从R1圆开始的绝对距离'}
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="offsetDistance${cCircle.id}">垂直偏移：</label>
-                                <input type="number" id="offsetDistance${cCircle.id}" value="${roundToTwoDecimals(cCircle.offsetDistance).toFixed(2)}" step="0.1" class="circle-input">
-                                <div class="info-text" id="offsetDistanceHelp${cCircle.id}" style="font-size: 10px;">
-                                    ${cCircle.type === 'incremental' ? '相对于参考槽的增量偏移' : '从中心线的绝对偏移'}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="input-row" id="baseCircleRow${cCircle.id}" style="display: ${baseCircleDisplay};">
-                            <div class="input-group">
-                                <label for="baseCircle${cCircle.id}">参考槽：</label>
-                                <select id="baseCircle${cCircle.id}" class="base-circle-input">
-                                    ${baseCircleOptions}
-                                </select>
-                            </div>
-                        </div>
+                    positionTypeOptions = `
+                        <option value="absolute" ${isAbsolute ? 'selected' : ''}>绝对位置</option>
+                        <option value="incremental" ${isIncremental ? 'selected' : ''}>增量位置</option>
                     `;
-                    cCircleList.appendChild(item);
                 }
-            }
-            
-            // 渲染Q槽列表
-            function renderQCircleList() {
-                qCircleListContainer.innerHTML = '';
                 
-                for (const qCircle of qCircles) {
-                    const item = document.createElement('div');
-                    item.className = 'q-circle-item';
-                    item.innerHTML = `
-                        <div class="q-circle-header">
-                            <div class="q-circle-title">${qCircle.name}</div>
-                            <button class="remove-q-circle-btn" data-id="${qCircle.id}">删除</button>
+                let baseCircleOptions = '<option value="">-- 选择参考槽 --</option>';
+                for (const baseCircle of cCircles) {
+                    if (baseCircle.id < cCircle.id) {
+                        baseCircleOptions += `<option value="${baseCircle.id}" ${cCircle.baseCircleId === baseCircle.id ? 'selected' : ''}>${baseCircle.name}</option>`;
+                    }
+                }
+                
+                const baseCircleDisplay = cCircle.type === 'incremental' ? 'block' : 'none';
+                
+                const moveModeText = cCircle.moveMode === 'single' ? '单边距离' : '双边距离';
+                const offsetModeText = cCircle.offsetMode === 'single' ? '单边距离' : '双边距离';
+                
+                item.innerHTML = `
+                    <div class="c-circle-header">
+                        <div class="c-circle-title">${cCircle.name}</div>
+                        <button class="remove-circle-btn" data-id="${cCircle.id}">删除</button>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="positionType${cCircle.id}">位置类型：</label>
+                            <select id="positionType${cCircle.id}" class="position-type-input">
+                                ${positionTypeOptions}
+                            </select>
                         </div>
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label for="qCircleX${qCircle.id}">X轴平移：</label>
-                                <input type="number" id="qCircleX${qCircle.id}" value="${roundToTwoDecimals(qCircle.xOffset).toFixed(2)}" step="0.1" class="q-circle-input">
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="moveDistance${cCircle.id}">平移距离：</label>
+                            <select id="moveMode${cCircle.id}" class="mode-select">
+                                <option value="single" ${cCircle.moveMode === 'single' ? 'selected' : ''}>单边距离</option>
+                                <option value="double" ${cCircle.moveMode === 'double' ? 'selected' : ''}>双边距离</option>
+                            </select>
+                            <input type="number" id="moveDistance${cCircle.id}" value="${roundToTwoDecimals(cCircle.moveDistance).toFixed(2)}" step="0.1" class="circle-input">
+                            <div class="info-text" id="moveDistanceHelp${cCircle.id}" style="font-size: 10px;">
+                                ${cCircle.type === 'incremental' ? '相对于参考槽的增量距离' : '从R1圆开始的绝对距离'}
                             </div>
-                            <div class="input-group">
-                                <label for="qCircleY${qCircle.id}">Y轴偏移：</label>
-                                <input type="number" id="qCircleY${qCircle.id}" value="${roundToTwoDecimals(qCircle.yOffset).toFixed(2)}" step="0.1" class="q-circle-input">
-                            </div>
+                            <div class="mode-hint">平移距离目前是${moveModeText}</div>
                         </div>
-                    `;
-                    qCircleListContainer.appendChild(item);
-                }
+                        <div class="input-group">
+                            <label for="offsetDistance${cCircle.id}">垂直偏移：</label>
+                            <select id="offsetMode${cCircle.id}" class="mode-select">
+                                <option value="single" ${cCircle.offsetMode === 'single' ? 'selected' : ''}>单边距离</option>
+                                <option value="double" ${cCircle.offsetMode === 'double' ? 'selected' : ''}>双边距离</option>
+                            </select>
+                            <input type="number" id="offsetDistance${cCircle.id}" value="${roundToTwoDecimals(cCircle.offsetDistance).toFixed(2)}" step="0.1" class="circle-input">
+                            <div class="info-text" id="offsetDistanceHelp${cCircle.id}" style="font-size: 10px;">
+                                ${cCircle.type === 'incremental' ? '相对于参考槽的增量偏移' : '从中心线的绝对偏移'}
+                            </div>
+                            <div class="mode-hint">垂直距离目前是${offsetModeText}</div>
+                        </div>
+                    </div>
+                    <div class="input-row" id="baseCircleRow${cCircle.id}" style="display: ${baseCircleDisplay};">
+                        <div class="input-group">
+                            <label for="baseCircle${cCircle.id}">参考槽：</label>
+                            <select id="baseCircle${cCircle.id}" class="base-circle-input">
+                                ${baseCircleOptions}
+                            </select>
+                        </div>
+                    </div>
+                `;
+                cCircleList.appendChild(item);
+            }
+        }
+        
+        function renderQCircleList() {
+            qCircleListContainer.innerHTML = '';
+            
+            for (const qCircle of qCircles) {
+                const item = document.createElement('div');
+                item.className = 'q-circle-item';
+                item.innerHTML = `
+                    <div class="q-circle-header">
+                        <div class="q-circle-title">${qCircle.name}</div>
+                        <button class="remove-q-circle-btn" data-id="${qCircle.id}">删除</button>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="qCircleX${qCircle.id}">X轴平移：</label>
+                            <input type="number" id="qCircleX${qCircle.id}" value="${roundToTwoDecimals(qCircle.xOffset).toFixed(2)}" step="0.1" class="q-circle-input">
+                        </div>
+                        <div class="input-group">
+                            <label for="qCircleY${qCircle.id}">Y轴偏移：</label>
+                            <input type="number" id="qCircleY${qCircle.id}" value="${roundToTwoDecimals(qCircle.yOffset).toFixed(2)}" step="0.1" class="q-circle-input">
+                        </div>
+                    </div>
+                `;
+                qCircleListContainer.appendChild(item);
+            }
+        }
+        
+        function addCCircle() {
+            const lastCircle = cCircles.length > 0 ? cCircles[cCircles.length - 1] : null;
+            
+            const newCircle = {
+                id: nextCircleId++,
+                moveDistance: 2.0,
+                offsetDistance: 0.0,
+                name: `C${nextCircleId - 1}`,
+                type: 'absolute',
+                baseCircleId: null,
+                moveMode: 'single',
+                offsetMode: 'single'
+            };
+            
+            cCircles.push(newCircle);
+            renderCCircleList();
+            updateAll();
+        }
+        
+        function addQCircle() {
+            const xOffset = parseFloat(defaultQCircleXInput.value) || 3;
+            const yOffset = parseFloat(defaultQCircleYInput.value) || 0;
+            
+            const newQCircle = {
+                id: nextQCircleId++,
+                xOffset: xOffset,
+                yOffset: yOffset,
+                name: `Q${nextQCircleId - 1}`
+            };
+            qCircles.push(newQCircle);
+            renderQCircleList();
+            updateAll();
+        }
+        
+        function removeCCircle(id) {
+            if (cCircles.length <= 1) {
+                alert('至少需要保留一个C槽');
+                return;
             }
             
-            // 添加C槽
-            function addCCircle() {
-                const lastCircle = cCircles.length > 0 ? cCircles[cCircles.length - 1] : null;
-                
-                const newCircle = {
-                    id: nextCircleId++,
-                    moveDistance: 2.0,
-                    offsetDistance: 0.0,
-                    name: `C${nextCircleId - 1}`,
-                    type: lastCircle ? 'incremental' : 'absolute',
-                    baseCircleId: lastCircle ? lastCircle.id : null
-                };
-                
-                cCircles.push(newCircle);
-                renderCCircleList();
-                updateAll();
-            }
+            cCircles = cCircles.filter(circle => circle.id !== id);
+            renderCCircleList();
+            updateAll();
+        }
+        
+        function removeQCircle(id) {
+            qCircles = qCircles.filter(circle => circle.id !== id);
+            renderQCircleList();
+            updateAll();
+        }
+        
+        function resizeCanvas() {
+            const wrapperRect = canvasWrapper.getBoundingClientRect();
+            const wrapperWidth = wrapperRect.width;
+            const wrapperHeight = wrapperRect.height;
             
-            // 添加Q槽
-            function addQCircle() {
-                const xOffset = parseFloat(defaultQCircleXInput.value) || 3;
-                const yOffset = parseFloat(defaultQCircleYInput.value) || 0;
-                
-                const newQCircle = {
-                    id: nextQCircleId++,
-                    xOffset: xOffset,
-                    yOffset: yOffset,
-                    name: `Q${nextQCircleId - 1}`
-                };
-                qCircles.push(newQCircle);
-                renderQCircleList();
-                updateAll();
-            }
-            
-            // 删除C槽
-            function removeCCircle(id) {
-                if (cCircles.length <= 1) {
-                    alert('至少需要保留一个C槽');
-                    return;
-                }
-                
-                cCircles = cCircles.filter(circle => circle.id !== id);
-                renderCCircleList();
-                updateAll();
-            }
-            
-            // 删除Q槽
-            function removeQCircle(id) {
-                qCircles = qCircles.filter(circle => circle.id !== id);
-                renderQCircleList();
-                updateAll();
-            }
-            
-            // 调整画布尺寸
-            function resizeCanvas() {
-                const wrapperRect = canvasWrapper.getBoundingClientRect();
-                const wrapperWidth = wrapperRect.width;
-                const wrapperHeight = wrapperRect.height;
-                
-                if (wrapperWidth <= 0 || wrapperHeight <= 0) {
-                    canvas.width = 800;
-                    canvas.height = 600;
-                    return true;
-                }
-                
-                const dpr = window.devicePixelRatio || 1;
-                
-                canvas.style.width = wrapperWidth + 'px';
-                canvas.style.height = wrapperHeight + 'px';
-                
-                canvas.width = Math.floor(wrapperWidth * dpr);
-                canvas.height = Math.floor(wrapperHeight * dpr);
-                
+            if (wrapperWidth <= 0 || wrapperHeight <= 0) {
+                canvas.width = 800;
+                canvas.height = 600;
                 return true;
             }
             
-            // 从输入框更新参数
-            function updateParamsFromInputs() {
-                params.r1X = parseFloat(r1XInput.value) || 0;
-                params.r1Y = parseFloat(r1YInput.value) || 0;
-                params.r2X = parseFloat(r2XInput.value) || 0;
-                params.r2Y = parseFloat(r2YInput.value) || 0;
-                params.bigCircleDiameter = parseFloat(bigCircleDiameterInput.value) || 0;
-                params.smallCircleDiameter = parseFloat(smallCircleDiameterInput.value) || 0;
-                params.parallelDiameter = parseFloat(parallelDiameterInput.value) || 0;
-                params.smallCircleDiameter2 = parseFloat(smallCircleDiameter2Input.value) || 0;
-                params.qCircleDiameter = parseFloat(qCircleDiameterInput.value) || 0;
-                params.qCircleX = parseFloat(defaultQCircleXInput.value) || 0;
-                params.qCircleY = parseFloat(defaultQCircleYInput.value) || 0;
-                params.startX = parseFloat(startXInput.value) || 0;
-                params.startY = parseFloat(startYInput.value) || 0;
-                params.originX = parseFloat(originXInput.value) || 0;
-                params.originY = parseFloat(originYInput.value) || 0;
-                params.cuttingDepth = parseFloat(cuttingDepthInput.value) || 0;
-                params.feedRate = parseFloat(feedRateInput.value) || 0;
-            }
+            const dpr = window.devicePixelRatio || 1;
             
-            // 更新C槽参数
-            function updateCCircleParams() {
-                for (const cCircle of cCircles) {
-                    const moveInput = document.getElementById(`moveDistance${cCircle.id}`);
-                    const offsetInput = document.getElementById(`offsetDistance${cCircle.id}`);
-                    const typeSelect = document.getElementById(`positionType${cCircle.id}`);
-                    const baseCircleSelect = document.getElementById(`baseCircle${cCircle.id}`);
-                    
-                    if (moveInput) cCircle.moveDistance = parseFloat(moveInput.value) || 0;
-                    if (offsetInput) cCircle.offsetDistance = parseFloat(offsetInput.value) || 0;
-                    if (typeSelect) cCircle.type = typeSelect.value;
-                    if (baseCircleSelect && baseCircleSelect.value) {
-                        cCircle.baseCircleId = parseInt(baseCircleSelect.value);
-                    } else if (cCircle.type === 'incremental' && cCircle.id > 1) {
-                        cCircle.baseCircleId = cCircles.find(c => c.id === cCircle.id - 1)?.id || null;
+            canvas.style.width = wrapperWidth + 'px';
+            canvas.style.height = wrapperHeight + 'px';
+            
+            canvas.width = Math.floor(wrapperWidth * dpr);
+            canvas.height = Math.floor(wrapperHeight * dpr);
+            
+            return true;
+        }
+        
+        function updateParamsFromInputs() {
+            params.r1X = parseFloat(r1XInput.value) || 0;
+            params.r1Y = parseFloat(r1YInput.value) || 0;
+            params.r2X = parseFloat(r2XInput.value) || 0;
+            params.r2Y = parseFloat(r2YInput.value) || 0;
+            params.bigCircleDiameter = parseFloat(bigCircleDiameterInput.value) || 0;
+            params.smallCircleDiameter = parseFloat(smallCircleDiameterInput.value) || 0;
+            params.parallelDiameter = parseFloat(parallelDiameterInput.value) || 0;
+            params.smallCircleDiameter2 = parseFloat(smallCircleDiameter2Input.value) || 0;
+            params.qCircleDiameter = parseFloat(qCircleDiameterInput.value) || 0;
+            params.qCircleX = parseFloat(defaultQCircleXInput.value) || 0;
+            params.qCircleY = parseFloat(defaultQCircleYInput.value) || 0;
+            params.startX = parseFloat(startXInput.value) || 0;
+            params.startY = parseFloat(startYInput.value) || 0;
+            params.originX = parseFloat(originXInput.value) || 0;
+            params.originY = parseFloat(originYInput.value) || 0;
+            params.cuttingDepth = parseFloat(cuttingDepthInput.value) || 0;
+            params.feedRate = parseFloat(feedRateInput.value) || 0;
+        }
+        
+        function updateCCircleParams() {
+            for (const cCircle of cCircles) {
+                const moveInput = document.getElementById(`moveDistance${cCircle.id}`);
+                const offsetInput = document.getElementById(`offsetDistance${cCircle.id}`);
+                const typeSelect = document.getElementById(`positionType${cCircle.id}`);
+                const baseCircleSelect = document.getElementById(`baseCircle${cCircle.id}`);
+                const moveModeSelect = document.getElementById(`moveMode${cCircle.id}`);
+                const offsetModeSelect = document.getElementById(`offsetMode${cCircle.id}`);
+                
+                if (moveInput) cCircle.moveDistance = parseFloat(moveInput.value) || 0;
+                if (offsetInput) cCircle.offsetDistance = parseFloat(offsetInput.value) || 0;
+                if (typeSelect) cCircle.type = typeSelect.value;
+                if (moveModeSelect) cCircle.moveMode = moveModeSelect.value;
+                if (offsetModeSelect) cCircle.offsetMode = offsetModeSelect.value;
+                if (baseCircleSelect && baseCircleSelect.value) {
+                    cCircle.baseCircleId = parseInt(baseCircleSelect.value);
+                } else if (cCircle.type === 'incremental' && cCircle.id > 1) {
+                    cCircle.baseCircleId = cCircles.find(c => c.id === cCircle.id - 1)?.id || null;
+                }
+                
+                const moveHelp = document.getElementById(`moveDistanceHelp${cCircle.id}`);
+                const offsetHelp = document.getElementById(`offsetDistanceHelp${cCircle.id}`);
+                const baseCircleRow = document.getElementById(`baseCircleRow${cCircle.id}`);
+                
+                if (moveHelp && offsetHelp && baseCircleRow) {
+                    if (cCircle.type === 'incremental') {
+                        moveHelp.textContent = '相对于参考槽的增量距离';
+                        offsetHelp.textContent = '相对于参考槽的增量偏移';
+                        baseCircleRow.style.display = 'block';
+                    } else {
+                        moveHelp.textContent = '从R1圆开始的绝对距离';
+                        offsetHelp.textContent = '从中心线的绝对偏移';
+                        baseCircleRow.style.display = 'none';
                     }
-                    
-                    const moveHelp = document.getElementById(`moveDistanceHelp${cCircle.id}`);
-                    const offsetHelp = document.getElementById(`offsetDistanceHelp${cCircle.id}`);
-                    const baseCircleRow = document.getElementById(`baseCircleRow${cCircle.id}`);
-                    
-                    if (moveHelp && offsetHelp && baseCircleRow) {
-                        if (cCircle.type === 'incremental') {
-                            moveHelp.textContent = '相对于参考槽的增量距离';
-                            offsetHelp.textContent = '相对于参考槽的增量偏移';
-                            baseCircleRow.style.display = 'block';
-                        } else {
-                            moveHelp.textContent = '从R1圆开始的绝对距离';
-                            offsetHelp.textContent = '从中心线的绝对偏移';
-                            baseCircleRow.style.display = 'none';
-                        }
+                }
+                
+                // 更新模式提示
+                const moveHints = document.querySelectorAll(`.mode-hint`);
+                for (const hint of moveHints) {
+                    if (hint.textContent.includes('平移距离目前是')) {
+                        hint.textContent = `平移距离目前是${cCircle.moveMode === 'single' ? '单边距离' : '双边距离'}`;
+                    }
+                    if (hint.textContent.includes('垂直距离目前是')) {
+                        hint.textContent = `垂直距离目前是${cCircle.offsetMode === 'single' ? '单边距离' : '双边距离'}`;
                     }
                 }
             }
-            
-            // 更新Q槽参数
-            function updateQCircleParams() {
-                for (const qCircle of qCircles) {
-                    const xInput = document.getElementById(`qCircleX${qCircle.id}`);
-                    const yInput = document.getElementById(`qCircleY${qCircle.id}`);
-                    
-                    if (xInput) qCircle.xOffset = parseFloat(xInput.value) || 0;
-                    if (yInput) qCircle.yOffset = parseFloat(yInput.value) || 0;
-                }
+        }
+        
+        function updateQCircleParams() {
+            for (const qCircle of qCircles) {
+                const xInput = document.getElementById(`qCircleX${qCircle.id}`);
+                const yInput = document.getElementById(`qCircleY${qCircle.id}`);
+                
+                if (xInput) qCircle.xOffset = parseFloat(xInput.value) || 0;
+                if (yInput) qCircle.yOffset = parseFloat(yInput.value) || 0;
             }
+        }
+        
+        function updateAll() {
+            updateParamsFromInputs();
+            updateCCircleParams();
+            updateQCircleParams();
+            updateDataDisplay();
+            draw();
+        }
+        
+        function setupInputObserver() {
+            const inputElements = [
+                r1XInput, r1YInput, r2XInput, r2YInput,
+                bigCircleDiameterInput, smallCircleDiameterInput,
+                parallelDiameterInput, smallCircleDiameter2Input,
+                qCircleDiameterInput, defaultQCircleXInput, defaultQCircleYInput,
+                startXInput, startYInput, originXInput, originYInput,
+                cuttingDepthInput, feedRateInput
+            ];
             
-            // 更新所有数据
-            function updateAll() {
-                updateParamsFromInputs();
-                updateCCircleParams();
-                updateQCircleParams();
-                updateDataDisplay();
-                draw();
-            }
-            
-            // 设置输入观察器
-            function setupInputObserver() {
-                const inputElements = [
-                    r1XInput, r1YInput, r2XInput, r2YInput,
-                    bigCircleDiameterInput, smallCircleDiameterInput,
-                    parallelDiameterInput, smallCircleDiameter2Input,
-                    qCircleDiameterInput, defaultQCircleXInput, defaultQCircleYInput,
-                    startXInput, startYInput, originXInput, originYInput,
-                    cuttingDepthInput, feedRateInput
-                ];
-                
-                inputElements.forEach(input => {
-                    input.addEventListener('input', () => {
-                        loadingOverlay.classList.add('active');
-                        setTimeout(() => {
-                            updateAll();
-                        }, 100);
-                    });
-                });
-                
-                document.addEventListener('input', (e) => {
-                    if (e.target.classList.contains('circle-input') || 
-                        e.target.classList.contains('q-circle-input')) {
-                        loadingOverlay.classList.add('active');
-                        setTimeout(() => {
-                            updateAll();
-                        }, 100);
-                    }
-                });
-                
-                document.addEventListener('change', (e) => {
-                    if (e.target.classList.contains('position-type-input') || 
-                        e.target.classList.contains('base-circle-input')) {
-                        loadingOverlay.classList.add('active');
-                        setTimeout(() => {
-                            updateCCircleParams();
-                            updateAll();
-                        }, 100);
-                    }
-                });
-                
-                parallelDiameterInput.addEventListener('input', () => {
-                    const value = parseFloat(parallelDiameterInput.value) || 0;
-                    const half = calculateHalfParallel(value);
-                    halfParallelSpan.textContent = roundToTwoDecimals(half).toFixed(2);
-                    
+            inputElements.forEach(input => {
+                input.addEventListener('input', () => {
                     loadingOverlay.classList.add('active');
                     setTimeout(() => {
                         updateAll();
                     }, 100);
                 });
+            });
+            
+            document.addEventListener('input', (e) => {
+                if (e.target.classList.contains('circle-input') || 
+                    e.target.classList.contains('q-circle-input')) {
+                    loadingOverlay.classList.add('active');
+                    setTimeout(() => {
+                        updateAll();
+                    }, 100);
+                }
+            });
+            
+            document.addEventListener('change', (e) => {
+                if (e.target.classList.contains('position-type-input') || 
+                    e.target.classList.contains('base-circle-input') ||
+                    e.target.classList.contains('mode-select')) {
+                    loadingOverlay.classList.add('active');
+                    setTimeout(() => {
+                        updateCCircleParams();
+                        updateAll();
+                    }, 100);
+                }
+            });
+            
+            parallelDiameterInput.addEventListener('input', () => {
+                const value = parseFloat(parallelDiameterInput.value) || 0;
+                const half = calculateHalfParallel(value);
+                halfParallelSpan.textContent = roundToTwoDecimals(half).toFixed(2);
                 
-                rotationAngleSelect.addEventListener('change', () => {
-                    if (rotationAngleSelect.value === 'custom') {
-                        customAngleGroup.style.display = 'block';
-                    } else {
-                        customAngleGroup.style.display = 'none';
-                    }
+                loadingOverlay.classList.add('active');
+                setTimeout(() => {
+                    updateAll();
+                }, 100);
+            });
+            
+            rotationAngleSelect.addEventListener('change', () => {
+                if (rotationAngleSelect.value === 'custom') {
+                    customAngleGroup.style.display = 'block';
+                } else {
+                    customAngleGroup.style.display = 'none';
+                }
+            });
+        }
+        
+        function setupResizeObserver() {
+            if (!('ResizeObserver' in window)) {
+                window.addEventListener('resize', () => {
+                    setTimeout(() => {
+                        resizeCanvas();
+                        draw();
+                    }, 250);
                 });
+                return;
             }
             
-            // 设置尺寸观察器
-            function setupResizeObserver() {
-                if (!('ResizeObserver' in window)) {
-                    window.addEventListener('resize', () => {
-                        setTimeout(() => {
+            resizeObserver = new ResizeObserver((entries) => {
+                for (let entry of entries) {
+                    if (entry.target === canvasWrapper) {
+                        clearTimeout(resizeObserver.timeout);
+                        resizeObserver.timeout = setTimeout(() => {
                             resizeCanvas();
                             draw();
                         }, 250);
-                    });
-                    return;
+                    }
+                }
+            });
+            
+            resizeObserver.observe(canvasWrapper);
+        }
+        
+        function switchProgram(tabId) {
+            currentProgram = tabId;
+            
+            programTabs.forEach(tab => {
+                if (tab.getAttribute('data-tab') === tabId) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            document.querySelectorAll('.program-content').forEach(content => {
+                if (content.id === tabId + 'Content') {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        }
+        
+        function exportFile() {
+            fileNameInput.value = '';
+            exportModal.classList.add('active');
+            
+            setTimeout(() => {
+                fileNameInput.focus();
+            }, 100);
+        }
+        
+        function executeExport() {
+            let fileName = fileNameInput.value.trim();
+            if (!fileName) {
+                alert('请输入文件名');
+                fileNameInput.focus();
+                return;
+            }
+            
+            let programContent = '';
+            
+            if (currentProgram === 'program1') {
+                programContent = programOutput1.textContent;
+            } else {
+                programContent = programOutput2.textContent;
+            }
+            
+            const blob = new Blob([programContent], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(link.href);
+            exportModal.classList.remove('active');
+        }
+        
+        function init() {
+            r1XInput.value = roundToTwoDecimals(params.r1X).toFixed(2);
+            r1YInput.value = roundToTwoDecimals(params.r1Y).toFixed(2);
+            r2XInput.value = roundToTwoDecimals(params.r2X).toFixed(2);
+            r2YInput.value = roundToTwoDecimals(params.r2Y).toFixed(2);
+            bigCircleDiameterInput.value = roundToTwoDecimals(params.bigCircleDiameter).toFixed(2);
+            smallCircleDiameterInput.value = roundToTwoDecimals(params.smallCircleDiameter).toFixed(2);
+            parallelDiameterInput.value = roundToTwoDecimals(params.parallelDiameter).toFixed(2);
+            smallCircleDiameter2Input.value = roundToTwoDecimals(params.smallCircleDiameter2).toFixed(2);
+            qCircleDiameterInput.value = roundToTwoDecimals(params.qCircleDiameter).toFixed(2);
+            defaultQCircleXInput.value = roundToTwoDecimals(params.qCircleX).toFixed(2);
+            defaultQCircleYInput.value = roundToTwoDecimals(params.qCircleY).toFixed(2);
+            startXInput.value = roundToTwoDecimals(params.startX).toFixed(2);
+            startYInput.value = roundToTwoDecimals(params.startY).toFixed(2);
+            originXInput.value = roundToTwoDecimals(params.originX).toFixed(2);
+            originYInput.value = roundToTwoDecimals(params.originY).toFixed(2);
+            cuttingDepthInput.value = roundToTwoDecimals(params.cuttingDepth).toFixed(2);
+            feedRateInput.value = params.feedRate.toFixed(0);
+            
+            renderCCircleList();
+            renderQCircleList();
+            
+            setupInputObserver();
+            setupResizeObserver();
+            
+            addCircleBtn.addEventListener('click', addCCircle);
+            addQCircleBtn.addEventListener('click', addQCircle);
+            reverseBtn.addEventListener('click', reverseConnectionOrder);
+            rotateBtn.addEventListener('click', applyRotation);
+            
+            switchModeBtn.addEventListener('click', () => {
+                let hasIncremental = false;
+                let hasAbsolute = false;
+                
+                for (const circle of cCircles) {
+                    if (circle.type === 'incremental') hasIncremental = true;
+                    if (circle.type === 'absolute') hasAbsolute = true;
                 }
                 
-                resizeObserver = new ResizeObserver((entries) => {
-                    for (let entry of entries) {
-                        if (entry.target === canvasWrapper) {
-                            clearTimeout(resizeObserver.timeout);
-                            resizeObserver.timeout = setTimeout(() => {
-                                resizeCanvas();
-                                draw();
-                            }, 250);
+                if (hasAbsolute || (!hasIncremental && !hasAbsolute)) {
+                    for (let i = 0; i < cCircles.length; i++) {
+                        if (i > 0) {
+                            cCircles[i].type = 'incremental';
+                            cCircles[i].baseCircleId = i;
                         }
                     }
-                });
-                
-                resizeObserver.observe(canvasWrapper);
-            }
-            
-            // 程序切换
-            function switchProgram(tabId) {
-                currentProgram = tabId;
-                
-                programTabs.forEach(tab => {
-                    if (tab.getAttribute('data-tab') === tabId) {
-                        tab.classList.add('active');
-                    } else {
-                        tab.classList.remove('active');
-                    }
-                });
-                
-                document.querySelectorAll('.program-content').forEach(content => {
-                    if (content.id === tabId + 'Content') {
-                        content.classList.add('active');
-                    } else {
-                        content.classList.remove('active');
-                    }
-                });
-            }
-            
-            // 导出文件
-            function exportFile() {
-                fileNameInput.value = '';
-                exportModal.classList.add('active');
-                
-                setTimeout(() => {
-                    fileNameInput.focus();
-                }, 100);
-            }
-            
-            // 执行导出
-            function executeExport() {
-                let fileName = fileNameInput.value.trim();
-                if (!fileName) {
-                    alert('请输入文件名');
-                    fileNameInput.focus();
-                    return;
-                }
-                
-                let programContent = '';
-                
-                if (currentProgram === 'program1') {
-                    programContent = programOutput1.textContent;
+                    switchModeBtn.innerHTML = '🔄 切换所有为绝对编程';
                 } else {
-                    programContent = programOutput2.textContent;
+                    for (const circle of cCircles) {
+                        circle.type = 'absolute';
+                        circle.baseCircleId = null;
+                    }
+                    switchModeBtn.innerHTML = '🔄 切换所有为增量编程';
                 }
-                
-                const blob = new Blob([programContent], { type: 'text/plain;charset=utf-8' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                URL.revokeObjectURL(link.href);
-                exportModal.classList.remove('active');
-            }
-            
-            // 初始化函数
-            function init() {
-                r1XInput.value = roundToTwoDecimals(params.r1X).toFixed(2);
-                r1YInput.value = roundToTwoDecimals(params.r1Y).toFixed(2);
-                r2XInput.value = roundToTwoDecimals(params.r2X).toFixed(2);
-                r2YInput.value = roundToTwoDecimals(params.r2Y).toFixed(2);
-                bigCircleDiameterInput.value = roundToTwoDecimals(params.bigCircleDiameter).toFixed(2);
-                smallCircleDiameterInput.value = roundToTwoDecimals(params.smallCircleDiameter).toFixed(2);
-                parallelDiameterInput.value = roundToTwoDecimals(params.parallelDiameter).toFixed(2);
-                smallCircleDiameter2Input.value = roundToTwoDecimals(params.smallCircleDiameter2).toFixed(2);
-                qCircleDiameterInput.value = roundToTwoDecimals(params.qCircleDiameter).toFixed(2);
-                defaultQCircleXInput.value = roundToTwoDecimals(params.qCircleX).toFixed(2);
-                defaultQCircleYInput.value = roundToTwoDecimals(params.qCircleY).toFixed(2);
-                startXInput.value = roundToTwoDecimals(params.startX).toFixed(2);
-                startYInput.value = roundToTwoDecimals(params.startY).toFixed(2);
-                originXInput.value = roundToTwoDecimals(params.originX).toFixed(2);
-                originYInput.value = roundToTwoDecimals(params.originY).toFixed(2);
-                cuttingDepthInput.value = roundToTwoDecimals(params.cuttingDepth).toFixed(2);
-                feedRateInput.value = params.feedRate.toFixed(0);
                 
                 renderCCircleList();
+                updateAll();
+            });
+            
+            resetBtn.addEventListener('click', () => {
+                r1XInput.value = '';
+                r1YInput.value = '';
+                r2XInput.value = '';
+                r2YInput.value = '';
+                bigCircleDiameterInput.value = '';
+                smallCircleDiameterInput.value = '';
+                parallelDiameterInput.value = '';
+                smallCircleDiameter2Input.value = '';
+                qCircleDiameterInput.value = '';
+                defaultQCircleXInput.value = '';
+                defaultQCircleYInput.value = '';
+                startXInput.value = '';
+                startYInput.value = '';
+                originXInput.value = '';
+                originYInput.value = '';
+                cuttingDepthInput.value = '';
+                feedRateInput.value = '';
+                
+                cCircles = [
+                    { 
+                        id: 1, 
+                        moveDistance: 6.3, 
+                        offsetDistance: 3.2, 
+                        name: 'C1',
+                        type: 'absolute',
+                        baseCircleId: null,
+                        moveMode: 'single',
+                        offsetMode: 'single'
+                    },
+                    { 
+                        id: 2, 
+                        moveDistance: 8.5,
+                        offsetDistance: 2.3,
+                        name: 'C2',
+                        type: 'absolute',
+                        baseCircleId: null,
+                        moveMode: 'single',
+                        offsetMode: 'single'
+                    }
+                ];
+                nextCircleId = 3;
+                renderCCircleList();
+                
+                qCircles = [];
+                nextQCircleId = 1;
                 renderQCircleList();
                 
-                setupInputObserver();
-                setupResizeObserver();
+                reverseOrder = false;
+                reverseBtn.innerHTML = '🔄 反转加工顺序';
+                reverseBtn.classList.remove('active');
                 
-                addCircleBtn.addEventListener('click', addCCircle);
-                addQCircleBtn.addEventListener('click', addQCircle);
-                reverseBtn.addEventListener('click', reverseConnectionOrder);
-                rotateBtn.addEventListener('click', applyRotation);
+                graphRotation = 0;
+                rotationAngleSelect.value = '0';
+                customAngleGroup.style.display = 'none';
+                customAngleValue.value = '0';
                 
-                switchModeBtn.addEventListener('click', () => {
-                    let hasIncremental = false;
-                    let hasAbsolute = false;
-                    
-                    for (const circle of cCircles) {
-                        if (circle.type === 'incremental') hasIncremental = true;
-                        if (circle.type === 'absolute') hasAbsolute = true;
-                    }
-                    
-                    if (hasAbsolute || (!hasIncremental && !hasAbsolute)) {
-                        for (let i = 0; i < cCircles.length; i++) {
-                            if (i > 0) {
-                                cCircles[i].type = 'incremental';
-                                cCircles[i].baseCircleId = i;
-                            }
-                        }
-                        switchModeBtn.innerHTML = '🔄 切换所有为绝对编程';
-                    } else {
-                        for (const circle of cCircles) {
-                            circle.type = 'absolute';
-                            circle.baseCircleId = null;
-                        }
-                        switchModeBtn.innerHTML = '🔄 切换所有为增量编程';
-                    }
-                    
-                    renderCCircleList();
-                    updateAll();
-                });
+                switchModeBtn.innerHTML = '🔄 切换所有为增量编程';
                 
-                resetBtn.addEventListener('click', () => {
-                    r1XInput.value = '';
-                    r1YInput.value = '';
-                    r2XInput.value = '';
-                    r2YInput.value = '';
-                    bigCircleDiameterInput.value = '';
-                    smallCircleDiameterInput.value = '';
-                    parallelDiameterInput.value = '';
-                    smallCircleDiameter2Input.value = '';
-                    qCircleDiameterInput.value = '';
-                    defaultQCircleXInput.value = '';
-                    defaultQCircleYInput.value = '';
-                    startXInput.value = '';
-                    startYInput.value = '';
-                    originXInput.value = '';
-                    originYInput.value = '';
-                    cuttingDepthInput.value = '';
-                    feedRateInput.value = '';
-                    
-                    cCircles = [
-                        { 
-                            id: 1, 
-                            moveDistance: 6.3, 
-                            offsetDistance: 3.2, 
-                            name: 'C1',
-                            type: 'absolute',
-                            baseCircleId: null
-                        },
-                        { 
-                            id: 2, 
-                            moveDistance: 2.2,
-                            offsetDistance: -0.9,
-                            name: 'C2',
-                            type: 'incremental',
-                            baseCircleId: 1
-                        }
-                    ];
-                    nextCircleId = 3;
-                    renderCCircleList();
-                    
-                    qCircles = [];
-                    nextQCircleId = 1;
-                    renderQCircleList();
-                    
-                    reverseOrder = false;
-                    reverseBtn.innerHTML = '🔄 反转加工顺序';
-                    reverseBtn.classList.remove('active');
-                    
-                    graphRotation = 0;
-                    rotationAngleSelect.value = '0';
-                    customAngleGroup.style.display = 'none';
-                    customAngleValue.value = '0';
-                    
-                    switchModeBtn.innerHTML = '🔄 切换所有为增量编程';
-                    
-                    params = {...defaultParams};
-                    
-                    updateDataDisplay();
-                    
-                    setTimeout(() => {
-                        draw();
-                    }, 100);
-                });
-                
-                document.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('remove-circle-btn')) {
-                        const id = parseInt(e.target.getAttribute('data-id'));
-                        removeCCircle(id);
-                    }
-                    if (e.target.classList.contains('remove-q-circle-btn')) {
-                        const id = parseInt(e.target.getAttribute('data-id'));
-                        removeQCircle(id);
-                    }
-                });
-                
-                programTabs.forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        const tabId = tab.getAttribute('data-tab');
-                        switchProgram(tabId);
-                    });
-                });
-                
-                exportProgramBtn.addEventListener('click', exportFile);
-                cancelExportBtn.addEventListener('click', () => {
-                    exportModal.classList.remove('active');
-                });
-                confirmExportBtn.addEventListener('click', executeExport);
-                
-                exportModal.addEventListener('click', (e) => {
-                    if (e.target === exportModal) {
-                        exportModal.classList.remove('active');
-                    }
-                });
-                
-                fileNameInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        executeExport();
-                    }
-                });
+                params = {...defaultParams};
                 
                 updateDataDisplay();
                 
                 setTimeout(() => {
-                    resizeCanvas();
                     draw();
-                }, 200);
-                
-                isInitialized = true;
-            }
-            
-            window.addEventListener('orientationchange', () => {
-                setTimeout(() => {
-                    resizeCanvas();
-                    
-                    setTimeout(() => {
-                        if (!isDrawing) {
-                            draw();
-                        }
-                    }, 300);
-                }, 500);
+                }, 100);
             });
             
-            window.addEventListener('load', init);
-            
-            document.addEventListener('DOMContentLoaded', function() {
-                if (!isInitialized) {
-                    setTimeout(init, 100);
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-circle-btn')) {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    removeCCircle(id);
+                }
+                if (e.target.classList.contains('remove-q-circle-btn')) {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    removeQCircle(id);
                 }
             });
-        </script>
-    </body>
+            
+            programTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    switchProgram(tabId);
+                });
+            });
+            
+            exportProgramBtn.addEventListener('click', exportFile);
+            cancelExportBtn.addEventListener('click', () => {
+                exportModal.classList.remove('active');
+            });
+            confirmExportBtn.addEventListener('click', executeExport);
+            
+            exportModal.addEventListener('click', (e) => {
+                if (e.target === exportModal) {
+                    exportModal.classList.remove('active');
+                }
+            });
+            
+            fileNameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    executeExport();
+                }
+            });
+            
+            updateDataDisplay();
+            
+            setTimeout(() => {
+                resizeCanvas();
+                draw();
+            }, 200);
+            
+            isInitialized = true;
+        }
+        
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                resizeCanvas();
+                
+                setTimeout(() => {
+                    if (!isDrawing) {
+                        draw();
+                    }
+                }, 300);
+            }, 500);
+        });
+        
+        window.addEventListener('load', init);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isInitialized) {
+                setTimeout(init, 100);
+            }
+        });
+    </script>
+</body>
 </html>
